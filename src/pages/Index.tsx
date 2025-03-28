@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { BookCard } from "@/components/BookCard";
 import { CreditBalance } from "@/components/CreditBalance";
@@ -7,7 +6,7 @@ import { BookFilter } from "@/components/BookFilter";
 import { NavBar } from "@/components/NavBar";
 import { BookType } from "@/types/book";
 import { TransactionType } from "@/types/transaction";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 // Sample data
 const initialBooks: BookType[] = [
