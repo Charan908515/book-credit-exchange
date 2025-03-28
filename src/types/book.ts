@@ -7,5 +7,6 @@ export interface BookType {
   condition: string;
   creditValue: number;
   coverUrl: string;
-  ownerId?: string;
+  status?: string;
+  requestedBy?: string;
 }
