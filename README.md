@@ -1,69 +1,85 @@
-# Welcome to your Lovable project
 
-## Project info
+# Book Exchange Platform
 
-**URL**: https://lovable.dev/projects/c927e100-e4da-4ff7-9ddc-a46315648729
+A platform where users can exchange books using a credit system.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- List books for exchange
+- Request books from other users
+- Credit system for book exchanges
+- User dashboard and profile management
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c927e100-e4da-4ff7-9ddc-a46315648729) and start prompting.
+- Frontend: React, TypeScript, Tailwind CSS, Shadcn UI
+- Backend: Express.js, MongoDB, Mongoose
+- State Management: React Query
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Node.js
+- MongoDB (local or Atlas)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+1. Clone the repository
+2. Install frontend dependencies:
+   ```
+   npm install
+   ```
+3. Install backend dependencies:
+   ```
+   cd src/server
+   npm install
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Configuration
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+1. Create a `.env` file in the root directory with the following variables:
+   ```
+   MONGODB_URI=mongodb://localhost:27017/bookexchange
+   PORT=5000
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Running the Application
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+1. Start the backend server:
+   ```
+   cd src/server
+   npm run dev
+   ```
 
-**Edit a file directly in GitHub**
+2. Start the frontend development server:
+   ```
+   npm run dev
+   ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. Open your browser and navigate to `http://localhost:8080`
 
-**Use GitHub Codespaces**
+## Database Models
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### User
+- Username
+- Email
+- Password
+- Credits balance
 
-## What technologies are used for this project?
+### Book
+- Title
+- Author
+- Genres
+- Condition
+- Credit value
+- Cover image URL
+- Owner ID
 
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/c927e100-e4da-4ff7-9ddc-a46315648729) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+### Transaction
+- User ID
+- Book ID (optional)
+- Type (credit/debit)
+- Amount
+- Description
+- Date
