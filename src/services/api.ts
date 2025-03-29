@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api';
@@ -57,6 +58,26 @@ export const userApi = {
   
   register: async (userData: any) => {
     const response = await api.post('/users', userData);
+    return response.data;
+  },
+  
+  login: async (credentials: { email: string; password: string }) => {
+    const response = await api.post('/users/login', credentials);
+    return response.data;
+  },
+  
+  getAllUsers: async () => {
+    const response = await api.get('/users');
+    return response.data;
+  },
+  
+  updateUser: async (id: string, userData: any) => {
+    const response = await api.patch(`/users/${id}`, userData);
+    return response.data;
+  },
+  
+  deleteUser: async (id: string) => {
+    const response = await api.delete(`/users/${id}`);
     return response.data;
   },
   

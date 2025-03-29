@@ -1,5 +1,5 @@
 
-import { Book, User, Bell } from "lucide-react";
+import { Book, User, Bell, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,7 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
 
-export function NavBar() {
+interface NavBarProps {
+  isAdmin?: boolean;
+}
+
+export function NavBar({ isAdmin = false }: NavBarProps) {
   return (
     <header className="border-b bg-card sticky top-0 z-10">
       <div className="container flex justify-between items-center h-16">
@@ -30,6 +34,11 @@ export function NavBar() {
           <Link to="/requests" className="text-sm font-medium hover:text-primary transition-colors">
             Requests
           </Link>
+          {isAdmin && (
+            <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+              <Shield className="h-4 w-4" /> Admin
+            </Link>
+          )}
         </nav>
         
         <div className="flex items-center gap-2">
@@ -56,6 +65,13 @@ export function NavBar() {
               <DropdownMenuItem>
                 <Link to="/requests" className="w-full">My Requests</Link>
               </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem>
+                  <Link to="/admin" className="w-full flex items-center gap-1">
+                    <Shield className="h-4 w-4" /> Admin Dashboard
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem>Log Out</DropdownMenuItem>
             </DropdownMenuContent>
