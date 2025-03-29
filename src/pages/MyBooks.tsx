@@ -17,6 +17,7 @@ const initialMyBooks: BookType[] = [
     condition: "Very Good",
     creditValue: 3,
     coverUrl: "https://images.unsplash.com/photo-1513001900722-370f803f498d?q=80&w=687&auto=format&fit=crop",
+    addedAt: new Date(2023, 8, 10), // Sep 10, 2023
   },
   {
     id: "m2",
@@ -26,6 +27,7 @@ const initialMyBooks: BookType[] = [
     condition: "Good",
     creditValue: 2,
     coverUrl: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=687&auto=format&fit=crop",
+    addedAt: new Date(2023, 7, 22), // Aug 22, 2023
   },
   {
     id: "m3",
@@ -35,6 +37,7 @@ const initialMyBooks: BookType[] = [
     condition: "Like New",
     creditValue: 4,
     coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
+    addedAt: new Date(2024, 1, 15), // Feb 15, 2024
   },
 ];
 
@@ -43,7 +46,10 @@ const MyBooks = () => {
   const [isAddingBook, setIsAddingBook] = useState(false);
 
   const handleAddBook = (book: BookType) => {
-    const newBook = { ...book };
+    const newBook = { 
+      ...book,
+      addedAt: new Date() // Add current timestamp
+    };
     setMyBooks((prev) => [...prev, newBook]);
     setIsAddingBook(false);
   };
@@ -72,8 +78,7 @@ const MyBooks = () => {
         {isAddingBook ? (
           <div className="mb-8">
             <AddBookForm 
-              onAddBook={handleAddBook} 
-              onCancel={() => setIsAddingBook(false)} 
+              onAddBook={handleAddBook}
             />
           </div>
         ) : null}
@@ -84,7 +89,7 @@ const MyBooks = () => {
               <BookCard
                 key={book.id}
                 book={book}
-                onRequest={() => handleRemoveBook(book.id)}
+                onRequest={handleRemoveBook}
                 actionLabel="Remove"
               />
             ))}

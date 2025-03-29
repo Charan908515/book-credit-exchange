@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { BookCard } from "@/components/BookCard";
 import { CreditBalance } from "@/components/CreditBalance";
 import { AddBookForm } from "@/components/AddBookForm";
 import { BookFilter } from "@/components/BookFilter";
 import { NavBar } from "@/components/NavBar";
+import { NewBooksSlider } from "@/components/NewBooksSlider";
 import { BookType } from "@/types/book";
 import { TransactionType } from "@/types/transaction";
 import { toast } from "sonner";
@@ -18,6 +20,7 @@ const initialBooks: BookType[] = [
     condition: "Good",
     creditValue: 2,
     coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
+    addedAt: new Date(2023, 9, 15), // Oct 15, 2023
   },
   {
     id: "2",
@@ -27,6 +30,7 @@ const initialBooks: BookType[] = [
     condition: "Very Good",
     creditValue: 3,
     coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=687&auto=format&fit=crop",
+    addedAt: new Date(2023, 10, 5), // Nov 5, 2023
   },
   {
     id: "3",
@@ -36,6 +40,7 @@ const initialBooks: BookType[] = [
     condition: "Like New",
     creditValue: 4,
     coverUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=692&auto=format&fit=crop",
+    addedAt: new Date(2023, 11, 12), // Dec 12, 2023
   },
   {
     id: "4",
@@ -45,6 +50,7 @@ const initialBooks: BookType[] = [
     condition: "Good",
     creditValue: 2,
     coverUrl: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=687&auto=format&fit=crop",
+    addedAt: new Date(2024, 0, 8), // Jan 8, 2024
   },
   {
     id: "5",
@@ -54,6 +60,7 @@ const initialBooks: BookType[] = [
     condition: "Fair",
     creditValue: 2,
     coverUrl: "https://images.unsplash.com/photo-1629992101753-56d196c8aabb?q=80&w=690&auto=format&fit=crop",
+    addedAt: new Date(2024, 1, 20), // Feb 20, 2024
   },
   {
     id: "6",
@@ -63,6 +70,7 @@ const initialBooks: BookType[] = [
     condition: "Good",
     creditValue: 3,
     coverUrl: "https://images.unsplash.com/photo-1626618012641-bfbca5a31239?q=80&w=764&auto=format&fit=crop",
+    addedAt: new Date(2024, 2, 5), // Mar 5, 2024
   }
 ];
 
@@ -100,7 +108,10 @@ const Index = () => {
   const [transactions, setTransactions] = useState<TransactionType[]>(initialTransactions);
 
   const handleAddBook = (book: BookType) => {
-    const newBook = { ...book };
+    const newBook = { 
+      ...book,
+      addedAt: new Date() // Add current timestamp
+    };
     setBooks((prev) => [...prev, newBook]);
     setFilteredBooks((prev) => [...prev, newBook]);
     
@@ -206,7 +217,10 @@ const Index = () => {
           <AddBookForm onAddBook={handleAddBook} />
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Add the new books slider */}
+        <NewBooksSlider books={books} onRequestBook={handleRequestBook} />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8">
           <div className="lg:col-span-3">
             <BookFilter onFilterChange={handleFilterChange} />
             

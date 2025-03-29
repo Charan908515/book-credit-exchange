@@ -9,4 +9,5 @@ export interface BookType {
   coverUrl: string;
   status?: string;
   requestedBy?: string;
+  addedAt?: Date;
 }

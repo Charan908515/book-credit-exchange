@@ -7,9 +7,10 @@ import { BookType } from "@/types/book";
 interface BookCardProps {
   book: BookType;
   onRequest: (id: string) => void;
+  actionLabel?: string;
 }
 
-export function BookCard({ book, onRequest }: BookCardProps) {
+export function BookCard({ book, onRequest, actionLabel = "Request Book" }: BookCardProps) {
   return (
     <div className="book-card flex flex-col h-full">
       <div className="book-cover mb-3">
@@ -44,7 +45,7 @@ export function BookCard({ book, onRequest }: BookCardProps) {
           className="w-full"
           onClick={() => onRequest(book.id)}
         >
-          Request Book
+          {actionLabel}
         </Button>
       </div>
     </div>
