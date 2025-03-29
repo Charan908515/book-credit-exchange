@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api';
@@ -40,6 +39,11 @@ export const bookApi = {
   
   deleteBook: async (id: string) => {
     const response = await api.delete(`/books/${id}`);
+    return response.data;
+  },
+  
+  incrementReadCount: async (id: string) => {
+    const response = await api.post(`/books/${id}/read`);
     return response.data;
   }
 };

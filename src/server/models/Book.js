@@ -38,6 +38,10 @@ const bookSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  readCount: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -10,4 +10,5 @@ export interface BookType {
   status?: string;
   requestedBy?: string;
   addedAt?: Date;
+  readCount?: number;
 }

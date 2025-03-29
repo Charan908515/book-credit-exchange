@@ -46,7 +46,8 @@ router.post('/', async (req, res) => {
     condition: req.body.condition,
     creditValue: req.body.creditValue,
     coverUrl: req.body.coverUrl,
-    ownerId: req.body.ownerId
+    ownerId: req.body.ownerId,
+    readCount: 0
   });
 
   try {
@@ -72,7 +73,24 @@ router.patch('/:id', async (req, res) => {
     if (req.body.creditValue) book.creditValue = req.body.creditValue;
     if (req.body.coverUrl) book.coverUrl = req.body.coverUrl;
     if (req.body.isAvailable !== undefined) book.isAvailable = req.body.isAvailable;
+    if (req.body.readCount !== undefined) book.readCount = req.body.readCount;
     
+    const updatedBook = await book.save();
+    res.json(updatedBook);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Increment read count for a book
+router.post('/:id/read', async (req, res) => {
+  try {
+    const book = await Book.findById(req.params.id);
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+    
+    book.readCount += 1;
     const updatedBook = await book.save();
     res.json(updatedBook);
   } catch (err) {

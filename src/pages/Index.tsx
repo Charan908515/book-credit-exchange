@@ -21,6 +21,7 @@ const initialBooks: BookType[] = [
     creditValue: 2,
     coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
     addedAt: new Date(2023, 9, 15), // Oct 15, 2023
+    readCount: 42
   },
   {
     id: "2",
@@ -31,6 +32,7 @@ const initialBooks: BookType[] = [
     creditValue: 3,
     coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=687&auto=format&fit=crop",
     addedAt: new Date(2023, 10, 5), // Nov 5, 2023
+    readCount: 29
   },
   {
     id: "3",
@@ -41,6 +43,7 @@ const initialBooks: BookType[] = [
     creditValue: 4,
     coverUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=692&auto=format&fit=crop",
     addedAt: new Date(2023, 11, 12), // Dec 12, 2023
+    readCount: 15
   },
   {
     id: "4",
@@ -51,6 +54,7 @@ const initialBooks: BookType[] = [
     creditValue: 2,
     coverUrl: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=687&auto=format&fit=crop",
     addedAt: new Date(2024, 0, 8), // Jan 8, 2024
+    readCount: 21
   },
   {
     id: "5",
@@ -61,6 +65,7 @@ const initialBooks: BookType[] = [
     creditValue: 2,
     coverUrl: "https://images.unsplash.com/photo-1629992101753-56d196c8aabb?q=80&w=690&auto=format&fit=crop",
     addedAt: new Date(2024, 1, 20), // Feb 20, 2024
+    readCount: 33
   },
   {
     id: "6",
@@ -71,6 +76,7 @@ const initialBooks: BookType[] = [
     creditValue: 3,
     coverUrl: "https://images.unsplash.com/photo-1626618012641-bfbca5a31239?q=80&w=764&auto=format&fit=crop",
     addedAt: new Date(2024, 2, 5), // Mar 5, 2024
+    readCount: 56
   }
 ];
 
