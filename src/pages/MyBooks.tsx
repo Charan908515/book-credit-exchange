@@ -3,7 +3,9 @@ import { useState } from "react";
 import { NavBar } from "@/components/NavBar";
 import { BookType } from "@/types/book";
 import { BookCard } from "@/components/BookCard";
+import { BookListItem } from "@/components/BookListItem";
 import { Button } from "@/components/ui/button";
+import { ViewToggle } from "@/components/ViewToggle";
 import { Plus } from "lucide-react";
 import { AddBookForm } from "@/components/AddBookForm";
 
@@ -44,6 +46,7 @@ const initialMyBooks: BookType[] = [
 const MyBooks = () => {
   const [myBooks, setMyBooks] = useState<BookType[]>(initialMyBooks);
   const [isAddingBook, setIsAddingBook] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const handleAddBook = (book: BookType) => {
     const newBook = { 
@@ -84,16 +87,35 @@ const MyBooks = () => {
         ) : null}
         
         {myBooks.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {myBooks.map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                onRequest={handleRemoveBook}
-                actionLabel="Remove"
-              />
-            ))}
-          </div>
+          <>
+            <div className="flex justify-end mb-4">
+              <ViewToggle view={viewMode} onChange={setViewMode} />
+            </div>
+            
+            {viewMode === "grid" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {myBooks.map((book) => (
+                  <BookCard
+                    key={book.id}
+                    book={book}
+                    onRequest={handleRemoveBook}
+                    actionLabel="Remove"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {myBooks.map((book) => (
+                  <BookListItem
+                    key={book.id}
+                    book={book}
+                    onRequest={handleRemoveBook}
+                    actionLabel="Remove"
+                  />
+                ))}
+              </div>
+            )}
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center h-64 border rounded-lg bg-card">
             <p className="text-muted-foreground mb-4">You haven't added any books yet</p>

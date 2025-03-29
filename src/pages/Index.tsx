@@ -1,11 +1,12 @@
-
 import { useState } from "react";
 import { BookCard } from "@/components/BookCard";
+import { BookListItem } from "@/components/BookListItem";
 import { CreditBalance } from "@/components/CreditBalance";
 import { AddBookForm } from "@/components/AddBookForm";
 import { BookFilter } from "@/components/BookFilter";
 import { NavBar } from "@/components/NavBar";
 import { NewBooksSlider } from "@/components/NewBooksSlider";
+import { ViewToggle } from "@/components/ViewToggle";
 import { BookType } from "@/types/book";
 import { TransactionType } from "@/types/transaction";
 import { toast } from "sonner";
@@ -112,6 +113,7 @@ const Index = () => {
   const [filteredBooks, setFilteredBooks] = useState<BookType[]>(initialBooks);
   const [creditBalance, setCreditBalance] = useState(10);
   const [transactions, setTransactions] = useState<TransactionType[]>(initialTransactions);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const handleAddBook = (book: BookType) => {
     const newBook = { 
@@ -228,18 +230,33 @@ const Index = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8">
           <div className="lg:col-span-3">
-            <BookFilter onFilterChange={handleFilterChange} />
+            <div className="flex justify-between items-center mb-4">
+              <BookFilter onFilterChange={handleFilterChange} />
+              <ViewToggle view={viewMode} onChange={setViewMode} />
+            </div>
             
             {filteredBooks.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredBooks.map((book) => (
-                  <BookCard
-                    key={book.id}
-                    book={book}
-                    onRequest={handleRequestBook}
-                  />
-                ))}
-              </div>
+              viewMode === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredBooks.map((book) => (
+                    <BookCard
+                      key={book.id}
+                      book={book}
+                      onRequest={handleRequestBook}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {filteredBooks.map((book) => (
+                    <BookListItem
+                      key={book.id}
+                      book={book}
+                      onRequest={handleRequestBook}
+                    />
+                  ))}
+                </div>
+              )
             ) : (
               <div className="flex flex-col items-center justify-center h-64 border rounded-lg bg-card">
                 <p className="text-muted-foreground mb-4">No books match your filters</p>
