@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -15,6 +16,8 @@ interface NewBooksSliderProps {
 }
 
 export function NewBooksSlider({ books, onRequestBook }: NewBooksSliderProps) {
+  const [api, setApi] = useState<any>(null);
+
   // Sort books by addedAt date (newest first)
   const sortedBooks = [...books].sort((a, b) => {
     const dateA = a.addedAt ? new Date(a.addedAt).getTime() : 0;
@@ -25,10 +28,23 @@ export function NewBooksSlider({ books, onRequestBook }: NewBooksSliderProps) {
   // Take the 6 most recent books
   const recentBooks = sortedBooks.slice(0, 6);
 
+  // Set up auto-sliding
+  useEffect(() => {
+    if (!api) return;
+
+    // Start a timer that advances the carousel every 5 seconds
+    const autoPlayInterval = setInterval(() => {
+      api.scrollNext();
+    }, 5000);
+
+    // Clear the timer when component unmounts
+    return () => clearInterval(autoPlayInterval);
+  }, [api]);
+
   return (
     <div className="py-6">
       <h2 className="text-2xl font-serif font-bold mb-4">Newly Added Books</h2>
-      <Carousel className="w-full">
+      <Carousel className="w-full" setApi={setApi} opts={{ loop: true }}>
         <CarouselContent>
           {recentBooks.map((book) => (
             <CarouselItem key={book.id} className="sm:basis-1/2 lg:basis-1/3">
