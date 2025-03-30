@@ -1,10 +1,13 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
 import { BookType } from "@/types/book";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 // Sample data for requested and pending books
 const initialRequestedBooks: BookType[] = [
@@ -95,6 +98,21 @@ const RequestCard = ({ book, actions }: { book: BookType, actions?: React.ReactN
 const Requests = () => {
   const [requestedBooks, setRequestedBooks] = useState<BookType[]>(initialRequestedBooks);
   const [incomingRequests, setIncomingRequests] = useState<BookType[]>(initialIncomingRequests);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!user) {
+      toast.error("Please sign in to access your requests");
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
+  // If not authenticated, don't render the content
+  if (!user) {
+    return null;
+  }
 
   const handleCancelRequest = (bookId: string) => {
     setRequestedBooks((prev) => prev.filter((book) => book.id !== bookId));

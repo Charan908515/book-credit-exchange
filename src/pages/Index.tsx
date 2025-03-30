@@ -1,4 +1,6 @@
+
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { BookCard } from "@/components/BookCard";
 import { BookListItem } from "@/components/BookListItem";
 import { CreditBalance } from "@/components/CreditBalance";
@@ -10,6 +12,7 @@ import { ViewToggle } from "@/components/ViewToggle";
 import { BookType } from "@/types/book";
 import { TransactionType } from "@/types/transaction";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Sample data
 const initialBooks: BookType[] = [
@@ -114,8 +117,17 @@ const Index = () => {
   const [creditBalance, setCreditBalance] = useState(10);
   const [transactions, setTransactions] = useState<TransactionType[]>(initialTransactions);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleAddBook = (book: BookType) => {
+    // Check if user is authenticated
+    if (!user) {
+      toast.error("Please sign in to add books");
+      navigate("/login");
+      return;
+    }
+
     const newBook = { 
       ...book,
       addedAt: new Date() // Add current timestamp
@@ -139,6 +151,13 @@ const Index = () => {
   };
 
   const handleRequestBook = (bookId: string) => {
+    // Check if user is authenticated
+    if (!user) {
+      toast.error("Please sign in to request books");
+      navigate("/login");
+      return;
+    }
+    
     const book = books.find((b) => b.id === bookId);
     
     if (!book) return;
@@ -222,7 +241,13 @@ const Index = () => {
               Browse books, exchange with others, and manage your credit balance
             </p>
           </div>
-          <AddBookForm onAddBook={handleAddBook} />
+          {user ? (
+            <AddBookForm onAddBook={handleAddBook} />
+          ) : (
+            <Button onClick={() => navigate("/login")} className="bg-book-burgundy hover:bg-book-burgundy/90">
+              Sign in to add books
+            </Button>
+          )}
         </div>
         
         {/* Add the new books slider */}

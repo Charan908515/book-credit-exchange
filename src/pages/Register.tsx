@@ -79,9 +79,11 @@ export default function Register() {
         return;
       }
 
-      // Verify OTP and complete registration
+      // Ensure all required fields are passed to the API
       await userApi.verifyOTPAndRegister({
-        ...registrationData,
+        username: registrationData.username,
+        email: registrationData.email,
+        password: registrationData.password,
         otp: values.otp,
       });
       

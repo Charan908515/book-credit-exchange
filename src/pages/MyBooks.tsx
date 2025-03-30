@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
 import { BookType } from "@/types/book";
 import { BookCard } from "@/components/BookCard";
@@ -8,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { ViewToggle } from "@/components/ViewToggle";
 import { Plus } from "lucide-react";
 import { AddBookForm } from "@/components/AddBookForm";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 // Sample data for my books
 const initialMyBooks: BookType[] = [
@@ -47,6 +50,21 @@ const MyBooks = () => {
   const [myBooks, setMyBooks] = useState<BookType[]>(initialMyBooks);
   const [isAddingBook, setIsAddingBook] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!user) {
+      toast.error("Please sign in to access your books");
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
+  // If not authenticated, don't render the content
+  if (!user) {
+    return null;
+  }
 
   const handleAddBook = (book: BookType) => {
     const newBook = { 
