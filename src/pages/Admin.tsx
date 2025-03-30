@@ -1,11 +1,8 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavBar } from "@/components/NavBar";
 import { userApi, bookApi } from "@/services/api";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookType } from "@/types/book";
 import { toast } from "sonner";
@@ -21,10 +18,6 @@ interface UserType {
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("users");
-
-  // Check if user is admin (this would typically come from auth state)
-  // For this implementation, we're going to assume the user is already logged in as admin
-  // In a real app, you would redirect non-admin users
 
   const {
     data: users,

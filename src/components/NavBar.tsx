@@ -17,7 +17,10 @@ interface NavBarProps {
 }
 
 export function NavBar({ isAdmin = false }: NavBarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin: userIsAdmin } = useAuth();
+  
+  // Use the isAdmin value from the auth context instead of the prop
+  const showAdminFeatures = userIsAdmin;
   
   return (
     <header className="border-b bg-card sticky top-0 z-10">
@@ -41,7 +44,7 @@ export function NavBar({ isAdmin = false }: NavBarProps) {
               </Link>
             </>
           )}
-          {isAdmin && (
+          {showAdminFeatures && (
             <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
               <Shield className="h-4 w-4" /> Admin
             </Link>
@@ -74,7 +77,7 @@ export function NavBar({ isAdmin = false }: NavBarProps) {
                   <DropdownMenuItem>
                     <Link to="/requests" className="w-full">My Requests</Link>
                   </DropdownMenuItem>
-                  {isAdmin && (
+                  {showAdminFeatures && (
                     <DropdownMenuItem>
                       <Link to="/admin" className="w-full flex items-center gap-1">
                         <Shield className="h-4 w-4" /> Admin Dashboard

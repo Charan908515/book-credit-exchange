@@ -14,6 +14,7 @@ import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 import { useState } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AdminRoute } from "./components/AdminRoute";
 
 function App() {
   // Create a client
@@ -31,7 +32,14 @@ function App() {
               <Route path="/my-books" element={<MyBooks />} />
               <Route path="/requests" element={<Requests />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/admin" element={<Admin />} />
+              <Route 
+                path="/admin" 
+                element={
+                  <AdminRoute>
+                    <Admin />
+                  </AdminRoute>
+                } 
+              />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

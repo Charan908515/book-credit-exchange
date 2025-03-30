@@ -188,7 +188,11 @@ export default function Register() {
                     <FormItem className="space-y-4">
                       <FormLabel>Verification Code</FormLabel>
                       <FormControl>
-                        <InputOTP maxLength={6} {...field}>
+                        <InputOTP 
+                          maxLength={6} 
+                          value={field.value} 
+                          onChange={field.onChange}
+                        >
                           <InputOTPGroup>
                             <InputOTPSlot index={0} />
                             <InputOTPSlot index={1} />
