@@ -61,6 +61,21 @@ export const userApi = {
     return response.data;
   },
   
+  requestOTP: async (email: string) => {
+    const response = await api.post('/users/request-otp', { email });
+    return response.data;
+  },
+  
+  verifyOTPAndRegister: async (data: { 
+    username: string; 
+    email: string; 
+    password: string;
+    otp: string;
+  }) => {
+    const response = await api.post('/users/verify-otp', data);
+    return response.data;
+  },
+  
   login: async (credentials: { email: string; password: string }) => {
     const response = await api.post('/users/login', credentials);
     return response.data;
