@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import { useState } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AdminRoute } from "./components/AdminRoute";
+import "./index.css"; // Make sure CSS is imported
 
 function App() {
   // Create a client

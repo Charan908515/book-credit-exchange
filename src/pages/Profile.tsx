@@ -149,7 +149,9 @@ const Profile = () => {
                 <div className="space-y-4">
                   <div>
                     <span className="text-sm font-medium">Member Since</span>
-                    <div className="mt-1">{user.createdAt ? formatDate(user.createdAt) : "Not available"}</div>
+                    <div className="mt-1">
+                      {user._id ? "Member" : "Not available"}
+                    </div>
                   </div>
                   <div>
                     <span className="text-sm font-medium">Credits Balance</span>
