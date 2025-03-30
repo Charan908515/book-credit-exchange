@@ -27,23 +27,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check if user is logged in from localStorage
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-    setIsLoading(false);
+    const checkAuthStatus = async () => {
+      try {
+        setIsLoading(true);
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        localStorage.removeItem('user');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuthStatus();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       const userData = await userApi.login({ email, password });
+      
+      if (!userData) {
+        throw new Error('Login failed');
+      }
+      
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       toast.success(`Welcome back, ${userData.username}!`);
     } catch (error) {
       toast.error('Invalid email or password');
-      console.error(error);
+      console.error('Login error:', error);
+      throw error; // Re-throw the error to be handled by the login component
     } finally {
       setIsLoading(false);
     }

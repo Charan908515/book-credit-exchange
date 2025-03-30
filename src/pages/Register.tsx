@@ -41,6 +41,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [showOTPForm, setShowOTPForm] = useState(false);
   const [registrationData, setRegistrationData] = useState<RegisterFormValues | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const registerForm = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -60,6 +61,7 @@ export default function Register() {
 
   const onRegisterSubmit = async (values: RegisterFormValues) => {
     try {
+      setIsSubmitting(true);
       // Send registration data to API and request OTP
       await userApi.requestOTP(values.email);
       toast.success("OTP sent to your email address");
@@ -68,12 +70,16 @@ export default function Register() {
       setRegistrationData(values);
       setShowOTPForm(true);
     } catch (error) {
+      console.error("Failed to send OTP:", error);
       toast.error("Failed to send OTP. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const onOTPSubmit = async (values: OTPFormValues) => {
     try {
+      setIsSubmitting(true);
       if (!registrationData) {
         toast.error("Registration data missing. Please try again.");
         return;
@@ -90,7 +96,10 @@ export default function Register() {
       toast.success("Registration successful! You can now log in.");
       navigate("/login");
     } catch (error) {
+      console.error("Failed to verify OTP:", error);
       toast.error("Invalid OTP. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -161,9 +170,9 @@ export default function Register() {
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={registerForm.formState.isSubmitting}
+                  disabled={isSubmitting}
                 >
-                  {registerForm.formState.isSubmitting 
+                  {isSubmitting 
                     ? "Processing..." 
                     : "Register"}
                 </Button>
@@ -198,11 +207,20 @@ export default function Register() {
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={otpForm.formState.isSubmitting}
+                  disabled={isSubmitting}
                 >
-                  {otpForm.formState.isSubmitting 
+                  {isSubmitting 
                     ? "Verifying..." 
                     : "Verify OTP"}
+                </Button>
+                
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  className="w-full mt-2"
+                  onClick={() => setShowOTPForm(false)}
+                >
+                  Back to Registration
                 </Button>
               </form>
             </Form>

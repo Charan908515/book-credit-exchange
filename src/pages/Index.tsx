@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookCard } from "@/components/BookCard";
@@ -13,8 +12,8 @@ import { BookType } from "@/types/book";
 import { TransactionType } from "@/types/transaction";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
-// Sample data
 const initialBooks: BookType[] = [
   {
     id: "1",
@@ -121,7 +120,6 @@ const Index = () => {
   const navigate = useNavigate();
 
   const handleAddBook = (book: BookType) => {
-    // Check if user is authenticated
     if (!user) {
       toast.error("Please sign in to add books");
       navigate("/login");
@@ -130,12 +128,11 @@ const Index = () => {
 
     const newBook = { 
       ...book,
-      addedAt: new Date() // Add current timestamp
+      addedAt: new Date()
     };
     setBooks((prev) => [...prev, newBook]);
     setFilteredBooks((prev) => [...prev, newBook]);
     
-    // Add credit transaction
     const newTransaction: TransactionType = {
       id: crypto.randomUUID(),
       type: "credit",
@@ -151,7 +148,6 @@ const Index = () => {
   };
 
   const handleRequestBook = (bookId: string) => {
-    // Check if user is authenticated
     if (!user) {
       toast.error("Please sign in to request books");
       navigate("/login");
@@ -167,10 +163,8 @@ const Index = () => {
       return;
     }
     
-    // Update credit balance
     setCreditBalance((prev) => prev - book.creditValue);
     
-    // Add debit transaction
     const newTransaction: TransactionType = {
       id: crypto.randomUUID(),
       type: "debit",
@@ -183,7 +177,6 @@ const Index = () => {
     
     setTransactions((prev) => [newTransaction, ...prev]);
     
-    // Remove book from available books
     setBooks((prev) => prev.filter((b) => b.id !== bookId));
     setFilteredBooks((prev) => prev.filter((b) => b.id !== bookId));
     
@@ -193,7 +186,6 @@ const Index = () => {
   const handleFilterChange = (filters: any) => {
     let filtered = [...books];
     
-    // Apply search filter
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter(
@@ -203,7 +195,6 @@ const Index = () => {
       );
     }
     
-    // Apply genre filter
     if (filters.genre && filters.genre !== "all") {
       filtered = filtered.filter((book) =>
         book.genres.some((genre) => 
@@ -212,14 +203,12 @@ const Index = () => {
       );
     }
     
-    // Apply condition filter
     if (filters.condition && filters.condition !== "all") {
       filtered = filtered.filter(
         (book) => book.condition === filters.condition
       );
     }
     
-    // Apply max credits filter
     if (filters.maxCredits) {
       filtered = filtered.filter(
         (book) => book.creditValue <= filters.maxCredits
@@ -250,7 +239,6 @@ const Index = () => {
           )}
         </div>
         
-        {/* Add the new books slider */}
         <NewBooksSlider books={books} onRequestBook={handleRequestBook} />
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8">

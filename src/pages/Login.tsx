@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -29,6 +29,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -40,10 +41,15 @@ export default function Login() {
 
   const onSubmit = async (values: FormValues) => {
     try {
+      setIsSubmitting(true);
       await login(values.email, values.password);
+      toast.success("Login successful!");
       navigate("/");
     } catch (error) {
-      // Error is handled in the login function
+      console.error("Login failed:", error);
+      // Error is already handled in the login function
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -88,8 +94,8 @@ export default function Login() {
                 )}
               />
               
-              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Signing in..." : "Sign in"}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Signing in..." : "Sign in"}
               </Button>
             </form>
           </Form>
