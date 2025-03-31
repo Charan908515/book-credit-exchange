@@ -8,6 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 
 // Sample data for requested and pending books
 const initialRequestedBooks: BookType[] = [
@@ -42,7 +51,8 @@ const initialIncomingRequests: BookType[] = [
     condition: "Very Good",
     creditValue: 3,
     coverUrl: "https://images.unsplash.com/photo-1513001900722-370f803f498d?q=80&w=687&auto=format&fit=crop",
-    requestedBy: "Jane Smith"
+    requestedBy: "Jane Smith",
+    requestedByEmail: "jane.smith@example.com"
   }
 ];
 
@@ -98,6 +108,9 @@ const RequestCard = ({ book, actions }: { book: BookType, actions?: React.ReactN
 const Requests = () => {
   const [requestedBooks, setRequestedBooks] = useState<BookType[]>(initialRequestedBooks);
   const [incomingRequests, setIncomingRequests] = useState<BookType[]>(initialIncomingRequests);
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [meetupDetails, setMeetupDetails] = useState("");
+  const [showMeetupDialog, setShowMeetupDialog] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -118,12 +131,43 @@ const Requests = () => {
     setRequestedBooks((prev) => prev.filter((book) => book.id !== bookId));
   };
 
-  const handleApproveRequest = (bookId: string) => {
-    setIncomingRequests((prev) => prev.filter((book) => book.id !== bookId));
+  const handleOpenApprovalDialog = (bookId: string) => {
+    setSelectedBookId(bookId);
+    setMeetupDetails("");
+    setShowMeetupDialog(true);
+  };
+
+  const handleSendMeetupDetails = () => {
+    if (!selectedBookId || !meetupDetails.trim()) {
+      toast.error("Please enter the meetup details");
+      return;
+    }
+
+    const selectedBook = incomingRequests.find(book => book.id === selectedBookId);
+    
+    if (!selectedBook) {
+      toast.error("Book request not found");
+      return;
+    }
+
+    // In a real application, this would call an API to send the email
+    // For demo purposes, we'll just show a toast
+    toast.success(`Email sent to ${selectedBook.requestedBy} with meetup details`);
+    console.log("Sending email to:", selectedBook.requestedByEmail);
+    console.log("Meetup details:", meetupDetails);
+    console.log("Book:", selectedBook.title);
+
+    // Remove the book from incoming requests list
+    setIncomingRequests((prev) => prev.filter((book) => book.id !== selectedBookId));
+    
+    // Close the dialog
+    setShowMeetupDialog(false);
+    setSelectedBookId(null);
   };
 
   const handleRejectRequest = (bookId: string) => {
     setIncomingRequests((prev) => prev.filter((book) => book.id !== bookId));
+    toast.success("Request rejected successfully");
   };
 
   return (
@@ -197,7 +241,7 @@ const Requests = () => {
                           variant="outline" 
                           size="sm"
                           className="text-green-600 hover:text-green-600"
-                          onClick={() => handleApproveRequest(book.id)}
+                          onClick={() => handleOpenApprovalDialog(book.id)}
                         >
                           <Check className="mr-1 h-4 w-4" />
                           Approve
@@ -215,6 +259,42 @@ const Requests = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Meetup Details Dialog */}
+      <Dialog open={showMeetupDialog} onOpenChange={setShowMeetupDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Approve Book Request</DialogTitle>
+            <DialogDescription>
+              Please provide details about when and where you will give the book to the requester.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <Textarea
+              value={meetupDetails}
+              onChange={(e) => setMeetupDetails(e.target.value)}
+              placeholder="When and where you will give the book"
+              className="min-h-[100px]"
+            />
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowMeetupDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSendMeetupDetails}
+              disabled={!meetupDetails.trim()}
+            >
+              Send Details & Approve
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
