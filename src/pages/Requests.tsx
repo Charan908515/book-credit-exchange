@@ -135,6 +135,7 @@ const Requests = () => {
     setSelectedBookId(bookId);
     setMeetupDetails("");
     setShowMeetupDialog(true);
+    console.log("Opening dialog for book ID:", bookId);
   };
 
   const handleSendMeetupDetails = () => {
