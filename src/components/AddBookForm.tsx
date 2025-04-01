@@ -4,6 +4,7 @@ import { BookPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Dialog, 
   DialogContent, 
@@ -36,7 +37,9 @@ export function AddBookForm({ onAddBook }: { onAddBook: (bookData: any) => void 
     genres: "",
     condition: "Good",
     creditValue: 1,
-    coverUrl: ""
+    coverUrl: "",
+    description: "",
+    publishedDate: ""
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -61,13 +64,15 @@ export function AddBookForm({ onAddBook }: { onAddBook: (bookData: any) => void 
       genres: "",
       condition: "Good",
       creditValue: 1,
-      coverUrl: ""
+      coverUrl: "",
+      description: "",
+      publishedDate: ""
     });
     setOpen(false);
     toast.success("Book added successfully");
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -104,6 +109,29 @@ export function AddBookForm({ onAddBook }: { onAddBook: (bookData: any) => void 
               value={formData.author}
               onChange={handleChange}
               required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="publishedDate">Published Date</Label>
+            <Input
+              id="publishedDate"
+              name="publishedDate"
+              value={formData.publishedDate}
+              onChange={handleChange}
+              placeholder="e.g. 2020 or January 2020"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Enter a brief description of the book"
+              className="min-h-[100px]"
             />
           </div>
           
