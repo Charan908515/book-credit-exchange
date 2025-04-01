@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookType } from "@/types/book";
 import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 interface BookCardProps {
   book: BookType;
@@ -12,8 +13,22 @@ interface BookCardProps {
 }
 
 export function BookCard({ book, onRequest, actionLabel = "Request Book" }: BookCardProps) {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/book/${book.id}`);
+  };
+
+  const handleRequestClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click when clicking the button
+    onRequest(book.id);
+  };
+
   return (
-    <Card className="book-card flex flex-col h-full overflow-hidden shadow-lg">
+    <Card 
+      className="book-card flex flex-col h-full overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-all" 
+      onClick={handleCardClick}
+    >
       {/* Reader count notch */}
       <div className="relative">
         <div className="absolute top-0 right-0 z-10 bg-book-burgundy text-white px-3 py-1 rounded-bl-lg flex items-center gap-1 shadow-md">
@@ -54,7 +69,7 @@ export function BookCard({ book, onRequest, actionLabel = "Request Book" }: Book
           <Button 
             variant="default" 
             className="w-full"
-            onClick={() => onRequest(book.id)}
+            onClick={handleRequestClick}
           >
             {actionLabel}
           </Button>

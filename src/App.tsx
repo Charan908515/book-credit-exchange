@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import BookDetails from "./pages/BookDetails";
 import { useState } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AdminRoute } from "./components/AdminRoute";
@@ -33,6 +34,7 @@ function App() {
               <Route path="/my-books" element={<MyBooks />} />
               <Route path="/requests" element={<Requests />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/book/:id" element={<BookDetails />} />
               <Route 
                 path="/admin" 
                 element={

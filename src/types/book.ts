@@ -13,4 +13,5 @@ export interface BookType {
   addedAt?: Date;
   readCount?: number;
   description?: string;
+  publishedDate?: string;
 }

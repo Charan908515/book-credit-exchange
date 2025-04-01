@@ -3,6 +3,7 @@ import { BookType } from "@/types/book";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface BookListItemProps {
   book: BookType;
@@ -11,8 +12,22 @@ interface BookListItemProps {
 }
 
 export function BookListItem({ book, onRequest, actionLabel = "Request Book" }: BookListItemProps) {
+  const navigate = useNavigate();
+
+  const handleItemClick = () => {
+    navigate(`/book/${book.id}`);
+  };
+
+  const handleRequestClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click when clicking the button
+    onRequest(book.id);
+  };
+
   return (
-    <div className="flex items-center gap-4 p-4 border rounded-md bg-card hover:shadow-md transition-shadow">
+    <div 
+      className="flex items-center gap-4 p-4 border rounded-md bg-card hover:shadow-md transition-shadow cursor-pointer"
+      onClick={handleItemClick}
+    >
       <div className="relative h-20 aspect-[2/3] flex-shrink-0">
         {/* Reader count badge */}
         <div className="absolute top-0 right-0 z-10 bg-book-burgundy text-white px-2 py-0.5 rounded-bl-lg flex items-center gap-1 shadow-md text-xs">
@@ -58,7 +73,7 @@ export function BookListItem({ book, onRequest, actionLabel = "Request Book" }: 
         <Button 
           variant="default" 
           size="sm"
-          onClick={() => onRequest(book.id)}
+          onClick={handleRequestClick}
         >
           {actionLabel}
         </Button>
