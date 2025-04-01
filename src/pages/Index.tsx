@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookCard } from "@/components/BookCard";
 import { BookListItem } from "@/components/BookListItem";
@@ -13,6 +13,7 @@ import { TransactionType } from "@/types/transaction";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { bookApi, transactionApi } from "@/services/api";
 
 const initialBooks: BookType[] = [
   {
@@ -118,36 +119,74 @@ const Index = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleAddBook = (book: BookType) => {
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedBooks = await bookApi.getAllBooks();
+        const filteredBooks = user 
+          ? fetchedBooks.filter((book: any) => book.ownerId !== user._id)
+          : fetchedBooks;
+          
+        if (filteredBooks && filteredBooks.length > 0) {
+          setBooks(filteredBooks);
+          setFilteredBooks(filteredBooks);
+        } else {
+          console.log("Using initial books data as fallback");
+        }
+      } catch (error) {
+        console.error("Error fetching books:", error);
+        toast.error("Failed to fetch books. Using sample data.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBooks();
+    
+    if (user) {
+      // This would be implemented with a real API call to get user balance
+      // For now we use the mock value
+    }
+  }, [user]);
+
+  const handleAddBook = async (book: BookType) => {
     if (!user) {
       toast.error("Please sign in to add books");
       navigate("/login");
       return;
     }
 
-    const newBook = { 
-      ...book,
-      addedAt: new Date()
-    };
-    setBooks((prev) => [...prev, newBook]);
-    setFilteredBooks((prev) => [...prev, newBook]);
-    
-    const newTransaction: TransactionType = {
-      id: crypto.randomUUID(),
-      type: "credit",
-      amount: book.creditValue,
-      description: `Added '${book.title}'`,
-      date: new Date(),
-      bookId: book.id,
-      userId: "user1",
-    };
-    
-    setTransactions((prev) => [newTransaction, ...prev]);
-    setCreditBalance((prev) => prev + book.creditValue);
+    try {
+      const newBook = { 
+        ...book,
+        addedAt: new Date()
+      };
+      
+      setBooks((prev) => [...prev, newBook]);
+      setFilteredBooks((prev) => [...prev, newBook]);
+      
+      const newTransaction: TransactionType = {
+        id: crypto.randomUUID(),
+        type: "credit",
+        amount: book.creditValue,
+        description: `Added '${book.title}'`,
+        date: new Date(),
+        bookId: book.id,
+        userId: user._id,
+      };
+      
+      setTransactions((prev) => [newTransaction, ...prev]);
+      setCreditBalance((prev) => prev + book.creditValue);
+    } catch (error) {
+      console.error("Error adding book:", error);
+      toast.error("Failed to add book.");
+    }
   };
 
-  const handleRequestBook = (bookId: string) => {
+  const handleRequestBook = async (bookId: string) => {
     if (!user) {
       toast.error("Please sign in to request books");
       navigate("/login");
@@ -162,25 +201,32 @@ const Index = () => {
       toast.error("Not enough credits to request this book");
       return;
     }
-    
-    setCreditBalance((prev) => prev - book.creditValue);
-    
-    const newTransaction: TransactionType = {
-      id: crypto.randomUUID(),
-      type: "debit",
-      amount: book.creditValue,
-      description: `Requested '${book.title}'`,
-      date: new Date(),
-      bookId: book.id,
-      userId: "user1",
-    };
-    
-    setTransactions((prev) => [newTransaction, ...prev]);
-    
-    setBooks((prev) => prev.filter((b) => b.id !== bookId));
-    setFilteredBooks((prev) => prev.filter((b) => b.id !== bookId));
-    
-    toast.success(`Successfully requested "${book.title}"`);
+
+    try {
+      await transactionApi.exchangeBook(user._id, bookId);
+      
+      setCreditBalance((prev) => prev - book.creditValue);
+      
+      const newTransaction: TransactionType = {
+        id: crypto.randomUUID(),
+        type: "debit",
+        amount: book.creditValue,
+        description: `Requested '${book.title}'`,
+        date: new Date(),
+        bookId: book.id,
+        userId: user._id,
+      };
+      
+      setTransactions((prev) => [newTransaction, ...prev]);
+      
+      setBooks((prev) => prev.filter((b) => b.id !== bookId));
+      setFilteredBooks((prev) => prev.filter((b) => b.id !== bookId));
+      
+      toast.success(`Successfully requested "${book.title}"`);
+    } catch (error) {
+      console.error("Error requesting book:", error);
+      toast.error("Failed to request book. Please try again.");
+    }
   };
 
   const handleFilterChange = (filters: any) => {

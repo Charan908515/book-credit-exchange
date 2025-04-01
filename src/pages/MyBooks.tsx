@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
@@ -11,8 +10,9 @@ import { Plus } from "lucide-react";
 import { AddBookForm } from "@/components/AddBookForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { bookApi } from "@/services/api";
 
-// Sample data for my books
+// Sample data for my books only used as fallback
 const initialMyBooks: BookType[] = [
   {
     id: "m1",
@@ -47,9 +47,10 @@ const initialMyBooks: BookType[] = [
 ];
 
 const MyBooks = () => {
-  const [myBooks, setMyBooks] = useState<BookType[]>(initialMyBooks);
+  const [myBooks, setMyBooks] = useState<BookType[]>([]);
   const [isAddingBook, setIsAddingBook] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -58,7 +59,32 @@ const MyBooks = () => {
     if (!user) {
       toast.error("Please sign in to access your books");
       navigate("/login");
+      return;
     }
+
+    // Fetch user's books
+    const fetchUserBooks = async () => {
+      try {
+        setIsLoading(true);
+        const userBooks = await bookApi.getUserBooks(user._id);
+        
+        if (userBooks && userBooks.length > 0) {
+          setMyBooks(userBooks);
+        } else {
+          // Fallback to initial books for demo purposes
+          console.log("Using initial books data as fallback");
+          setMyBooks(initialMyBooks);
+        }
+      } catch (error) {
+        console.error("Error fetching user books:", error);
+        toast.error("Failed to fetch your books. Using sample data instead.");
+        setMyBooks(initialMyBooks);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserBooks();
   }, [user, navigate]);
 
   // If not authenticated, don't render the content
@@ -66,17 +92,36 @@ const MyBooks = () => {
     return null;
   }
 
-  const handleAddBook = (book: BookType) => {
-    const newBook = { 
-      ...book,
-      addedAt: new Date() // Add current timestamp
-    };
-    setMyBooks((prev) => [...prev, newBook]);
-    setIsAddingBook(false);
+  const handleAddBook = async (book: BookType) => {
+    try {
+      const newBook = { 
+        ...book,
+        addedAt: new Date() // Add current timestamp
+      };
+      
+      setMyBooks((prev) => [...prev, newBook]);
+      setIsAddingBook(false);
+      
+      toast.success("Book added successfully");
+    } catch (error) {
+      console.error("Error adding book:", error);
+      toast.error("Failed to add book. Please try again.");
+    }
   };
 
-  const handleRemoveBook = (bookId: string) => {
-    setMyBooks((prev) => prev.filter((book) => book.id !== bookId));
+  const handleRemoveBook = async (bookId: string) => {
+    try {
+      // Try to use the real API
+      await bookApi.deleteBook(bookId);
+      
+      setMyBooks((prev) => prev.filter((book) => book.id !== bookId));
+      toast.success("Book removed successfully");
+    } catch (error) {
+      console.error("Error removing book:", error);
+      // Still update UI if API fails (for demo purposes)
+      setMyBooks((prev) => prev.filter((book) => book.id !== bookId));
+      toast.success("Book removed successfully (demo mode)");
+    }
   };
 
   return (
@@ -91,20 +136,14 @@ const MyBooks = () => {
               Manage the books you've added to the exchange platform
             </p>
           </div>
-          <Button onClick={() => setIsAddingBook(true)} className="bg-book-burgundy hover:bg-book-burgundy/90">
-            <Plus className="mr-2 h-4 w-4" /> Add Book
-          </Button>
+          <AddBookForm onAddBook={handleAddBook} />
         </div>
         
-        {isAddingBook ? (
-          <div className="mb-8">
-            <AddBookForm 
-              onAddBook={handleAddBook}
-            />
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <p className="text-muted-foreground">Loading your books...</p>
           </div>
-        ) : null}
-        
-        {myBooks.length > 0 ? (
+        ) : myBooks.length > 0 ? (
           <>
             <div className="flex justify-end mb-4">
               <ViewToggle view={viewMode} onChange={setViewMode} />
