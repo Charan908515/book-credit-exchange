@@ -113,8 +113,8 @@ const initialTransactions: TransactionType[] = [
 ];
 
 const Index = () => {
-  const [books, setBooks] = useState<BookType[]>(initialBooks);
-  const [filteredBooks, setFilteredBooks] = useState<BookType[]>(initialBooks);
+  const [books, setBooks] = useState<BookType[]>([]);
+  const [filteredBooks, setFilteredBooks] = useState<BookType[]>([]);
   const [creditBalance, setCreditBalance] = useState(10);
   const [transactions, setTransactions] = useState<TransactionType[]>(initialTransactions);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -128,13 +128,13 @@ const Index = () => {
         setIsLoading(true);
         const fetchedBooks = await bookApi.getAllBooks();
         
-        // Filter out books owned by the current user (if logged in)
-        const availableBooks = user 
-          ? fetchedBooks.filter((book: BookType) => book.ownerId !== user._id)
-          : fetchedBooks;
+        if (fetchedBooks && fetchedBooks.length > 0) {
+          // Only filter out books owned by the current user
+          const availableBooks = user 
+            ? fetchedBooks.filter((book: BookType) => book.ownerId !== user._id)
+            : fetchedBooks;
           
-        if (availableBooks && availableBooks.length > 0) {
-          console.log("Available books:", availableBooks);
+          console.log("Available books for browsing:", availableBooks);
           setBooks(availableBooks);
           setFilteredBooks(availableBooks);
         } else {
@@ -184,13 +184,13 @@ const Index = () => {
       const newBook = { 
         ...book,
         addedAt: new Date(),
-        ownerId: user._id // Ensure ownerId is set
+        ownerId: user._id, // Ensure ownerId is set
+        isAvailable: true  // Make sure book is available by default
       };
       
       const addedBook = await bookApi.addBook(newBook);
       
-      // Don't add to the books list - it's for other users' books
-      // Instead, show a success toast
+      // Add a success toast
       toast.success(`Successfully added "${addedBook.title}"`);
       
       const newTransaction: TransactionType = {
@@ -205,6 +205,13 @@ const Index = () => {
       
       setTransactions((prev) => [newTransaction, ...prev]);
       setCreditBalance((prev) => prev + book.creditValue);
+      
+      // Refresh the book list to include books from all users except current user
+      const updatedBooks = await bookApi.getAllBooks();
+      const availableBooks = updatedBooks.filter((b: BookType) => b.ownerId !== user._id);
+      setBooks(availableBooks);
+      setFilteredBooks(availableBooks);
+      
     } catch (error) {
       console.error("Error adding book:", error);
       toast.error("Failed to add book.");

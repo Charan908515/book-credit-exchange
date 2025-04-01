@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/carousel";
 import { BookType } from "@/types/book";
 import { BookCard } from "./BookCard";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NewBooksSliderProps {
   books: BookType[];
@@ -17,6 +18,7 @@ interface NewBooksSliderProps {
 
 export function NewBooksSlider({ books, onRequestBook }: NewBooksSliderProps) {
   const [api, setApi] = useState<any>(null);
+  const { user } = useAuth();
 
   // Sort books by addedAt date (newest first)
   const sortedBooks = [...books].sort((a, b) => {
@@ -25,8 +27,10 @@ export function NewBooksSlider({ books, onRequestBook }: NewBooksSliderProps) {
     return dateB - dateA;
   });
 
-  // Take the 6 most recent books
-  const recentBooks = sortedBooks.slice(0, 6);
+  // Take the 6 most recent books, excluding the current user's books
+  const recentBooks = sortedBooks
+    .filter(book => !user || book.ownerId !== user._id)
+    .slice(0, 6);
 
   // Set up auto-sliding
   useEffect(() => {
@@ -40,6 +44,10 @@ export function NewBooksSlider({ books, onRequestBook }: NewBooksSliderProps) {
     // Clear the timer when component unmounts
     return () => clearInterval(autoPlayInterval);
   }, [api]);
+
+  if (recentBooks.length === 0) {
+    return null;
+  }
 
   return (
     <div className="py-6">

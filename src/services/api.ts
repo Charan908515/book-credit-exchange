@@ -16,7 +16,8 @@ const sampleBooks: BookType[] = [
     coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
     addedAt: new Date(2023, 9, 15), // Oct 15, 2023
     readCount: 42,
-    ownerId: "demo_user_123" // Added ownerId
+    ownerId: "demo_user_123", // Added ownerId
+    isAvailable: true
   },
   {
     id: "2",
@@ -28,7 +29,8 @@ const sampleBooks: BookType[] = [
     coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=687&auto=format&fit=crop",
     addedAt: new Date(2023, 10, 5), // Nov 5, 2023
     readCount: 29,
-    ownerId: "demo_admin_123" // Different user
+    ownerId: "demo_admin_123", // Different user
+    isAvailable: true
   },
   {
     id: "3",
@@ -40,7 +42,8 @@ const sampleBooks: BookType[] = [
     coverUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=692&auto=format&fit=crop",
     addedAt: new Date(2023, 11, 12), // Dec 12, 2023
     readCount: 15,
-    ownerId: "demo_user_123"
+    ownerId: "demo_user_123",
+    isAvailable: true
   }
 ];
 
@@ -66,7 +69,15 @@ export const bookApi = {
   getAllBooks: async () => {
     try {
       const response = await api.get('/books');
-      return response.data;
+      console.log("API books response:", response.data);
+      
+      // Ensure all books have the isAvailable property
+      const booksWithAvailability = response.data.map((book: BookType) => ({
+        ...book,
+        isAvailable: book.isAvailable !== undefined ? book.isAvailable : true
+      }));
+      
+      return booksWithAvailability;
     } catch (error) {
       console.error('Error fetching books:', error);
       // Return sample books if API call fails
@@ -77,6 +88,7 @@ export const bookApi = {
   getUserBooks: async (userId: string) => {
     try {
       const response = await api.get(`/books/user/${userId}`);
+      console.log("User books response:", response.data);
       return response.data;
     } catch (error) {
       console.error('Error fetching user books:', error);
@@ -96,19 +108,38 @@ export const bookApi = {
     }
   },
   
-  addBook: async (bookData: any) => {
+  addBook: async (bookData: BookType) => {
     try {
-      const response = await api.post('/books', bookData);
+      console.log("Adding book with data:", bookData);
+      
+      // Ensure book has required properties
+      const bookToAdd = {
+        ...bookData,
+        isAvailable: true,
+        addedAt: bookData.addedAt || new Date()
+      };
+      
+      const response = await api.post('/books', bookToAdd);
+      console.log("Book added successfully:", response.data);
+      
+      // Add book to our local sample data for fallback
+      sampleBooks.push(response.data);
+      
       return response.data;
     } catch (error) {
       console.error('Error adding book:', error);
-      // Create a new book with a random ID
+      // Create a new book with a random ID for fallback
       const newBook = {
         ...bookData,
-        id: 'local_' + Date.now(),
-        addedAt: new Date()
+        id: bookData.id || 'local_' + Date.now(),
+        addedAt: bookData.addedAt || new Date(),
+        isAvailable: true
       };
+      
+      // Add to our local sample collection
       sampleBooks.push(newBook);
+      console.log("Added fallback book to sample data:", newBook);
+      
       return newBook;
     }
   },

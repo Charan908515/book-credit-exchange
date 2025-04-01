@@ -15,4 +15,5 @@ export interface BookType {
   description?: string;
   publishedDate?: string;
   ownerId?: string;
+  isAvailable?: boolean;
 }

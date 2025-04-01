@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
@@ -69,13 +70,15 @@ const MyBooks = () => {
         const userBooks = await bookApi.getUserBooks(user._id);
         
         if (userBooks && userBooks.length > 0) {
+          console.log("User's books:", userBooks);
           setMyBooks(userBooks);
         } else {
           // Fallback to initial books for demo purposes, but ensure ownerId matches
-          console.log("Using initial books data as fallback");
+          console.log("No user books found, using initial books as fallback");
           const myInitialBooks = initialMyBooks.map(book => ({
             ...book,
-            ownerId: user._id
+            ownerId: user._id,
+            isAvailable: true
           }));
           setMyBooks(myInitialBooks);
         }
@@ -86,7 +89,8 @@ const MyBooks = () => {
         // Fallback to initial books for demo purposes, but ensure ownerId matches
         const myInitialBooks = initialMyBooks.map(book => ({
           ...book,
-          ownerId: user._id
+          ownerId: user._id,
+          isAvailable: true
         }));
         setMyBooks(myInitialBooks);
       } finally {
@@ -107,7 +111,8 @@ const MyBooks = () => {
       const newBook = { 
         ...book,
         addedAt: new Date(),
-        ownerId: user._id // Ensure ownerId is set
+        ownerId: user._id, // Ensure ownerId is set
+        isAvailable: true  // Make sure book is available by default
       };
       
       const addedBook = await bookApi.addBook(newBook);
