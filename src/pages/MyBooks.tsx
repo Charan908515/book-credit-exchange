@@ -71,14 +71,24 @@ const MyBooks = () => {
         if (userBooks && userBooks.length > 0) {
           setMyBooks(userBooks);
         } else {
-          // Fallback to initial books for demo purposes
+          // Fallback to initial books for demo purposes, but ensure ownerId matches
           console.log("Using initial books data as fallback");
-          setMyBooks(initialMyBooks);
+          const myInitialBooks = initialMyBooks.map(book => ({
+            ...book,
+            ownerId: user._id
+          }));
+          setMyBooks(myInitialBooks);
         }
       } catch (error) {
         console.error("Error fetching user books:", error);
         toast.error("Failed to fetch your books. Using sample data instead.");
-        setMyBooks(initialMyBooks);
+        
+        // Fallback to initial books for demo purposes, but ensure ownerId matches
+        const myInitialBooks = initialMyBooks.map(book => ({
+          ...book,
+          ownerId: user._id
+        }));
+        setMyBooks(myInitialBooks);
       } finally {
         setIsLoading(false);
       }
@@ -96,10 +106,12 @@ const MyBooks = () => {
     try {
       const newBook = { 
         ...book,
-        addedAt: new Date() // Add current timestamp
+        addedAt: new Date(),
+        ownerId: user._id // Ensure ownerId is set
       };
       
-      setMyBooks((prev) => [...prev, newBook]);
+      const addedBook = await bookApi.addBook(newBook);
+      setMyBooks((prev) => [...prev, addedBook]);
       setIsAddingBook(false);
       
       toast.success("Book added successfully");

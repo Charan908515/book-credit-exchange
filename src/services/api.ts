@@ -1,7 +1,48 @@
-
 import axios from 'axios';
+import { BookType } from '@/types/book';
 
+// This would be an environment variable in production
 const API_URL = 'http://localhost:5000/api';
+
+// Sample data for books in case the API fails
+const sampleBooks: BookType[] = [
+  {
+    id: "1",
+    title: "To Kill a Mockingbird",
+    author: "Harper Lee",
+    genres: ["Fiction", "Classic", "Coming-of-age"],
+    condition: "Good",
+    creditValue: 2,
+    coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
+    addedAt: new Date(2023, 9, 15), // Oct 15, 2023
+    readCount: 42,
+    ownerId: "demo_user_123" // Added ownerId
+  },
+  {
+    id: "2",
+    title: "1984",
+    author: "George Orwell",
+    genres: ["Fiction", "Dystopian", "Classics"],
+    condition: "Very Good",
+    creditValue: 3,
+    coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=687&auto=format&fit=crop",
+    addedAt: new Date(2023, 10, 5), // Nov 5, 2023
+    readCount: 29,
+    ownerId: "demo_admin_123" // Different user
+  },
+  {
+    id: "3",
+    title: "Pride and Prejudice",
+    author: "Jane Austen",
+    genres: ["Romance", "Classic", "Fiction"],
+    condition: "Like New",
+    creditValue: 4,
+    coverUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=692&auto=format&fit=crop",
+    addedAt: new Date(2023, 11, 12), // Dec 12, 2023
+    readCount: 15,
+    ownerId: "demo_user_123"
+  }
+];
 
 // Configure axios
 const api = axios.create({
@@ -23,23 +64,53 @@ api.interceptors.response.use(
 // Book API calls
 export const bookApi = {
   getAllBooks: async () => {
-    const response = await api.get('/books');
-    return response.data;
+    try {
+      const response = await api.get('/books');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching books:', error);
+      // Return sample books if API call fails
+      return sampleBooks;
+    }
   },
   
   getUserBooks: async (userId: string) => {
-    const response = await api.get(`/books/user/${userId}`);
-    return response.data;
+    try {
+      const response = await api.get(`/books/user/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user books:', error);
+      // Filter sample books by ownerId
+      return sampleBooks.filter(book => book.ownerId === userId);
+    }
   },
   
   getBook: async (id: string) => {
-    const response = await api.get(`/books/${id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/books/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching book details:', error);
+      // Return a sample book if API call fails
+      return sampleBooks.find(book => book.id === id);
+    }
   },
   
   addBook: async (bookData: any) => {
-    const response = await api.post('/books', bookData);
-    return response.data;
+    try {
+      const response = await api.post('/books', bookData);
+      return response.data;
+    } catch (error) {
+      console.error('Error adding book:', error);
+      // Create a new book with a random ID
+      const newBook = {
+        ...bookData,
+        id: 'local_' + Date.now(),
+        addedAt: new Date()
+      };
+      sampleBooks.push(newBook);
+      return newBook;
+    }
   },
   
   updateBook: async (id: string, bookData: any) => {

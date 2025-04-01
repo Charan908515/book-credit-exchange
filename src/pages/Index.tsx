@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookCard } from "@/components/BookCard";
@@ -126,18 +127,38 @@ const Index = () => {
       try {
         setIsLoading(true);
         const fetchedBooks = await bookApi.getAllBooks();
-        const filteredBooks = user 
-          ? fetchedBooks.filter((book: any) => book.ownerId !== user._id)
+        
+        // Filter out books owned by the current user (if logged in)
+        const availableBooks = user 
+          ? fetchedBooks.filter((book: BookType) => book.ownerId !== user._id)
           : fetchedBooks;
           
-        if (filteredBooks && filteredBooks.length > 0) {
-          setBooks(filteredBooks);
-          setFilteredBooks(filteredBooks);
+        if (availableBooks && availableBooks.length > 0) {
+          console.log("Available books:", availableBooks);
+          setBooks(availableBooks);
+          setFilteredBooks(availableBooks);
         } else {
-          console.log("Using initial books data as fallback");
+          console.log("No available books found, using initial books as fallback");
+          
+          // If using fallback data, filter it too
+          const fallbackBooks = user
+            ? initialBooks.filter(book => !book.ownerId || book.ownerId !== user._id)
+            : initialBooks;
+            
+          setBooks(fallbackBooks);
+          setFilteredBooks(fallbackBooks);
         }
       } catch (error) {
         console.error("Error fetching books:", error);
+        
+        // Use fallback data if API fails, filtered by current user
+        const fallbackBooks = user
+          ? initialBooks.filter(book => !book.ownerId || book.ownerId !== user._id)
+          : initialBooks;
+          
+        setBooks(fallbackBooks);
+        setFilteredBooks(fallbackBooks);
+        
         toast.error("Failed to fetch books. Using sample data.");
       } finally {
         setIsLoading(false);
@@ -162,11 +183,15 @@ const Index = () => {
     try {
       const newBook = { 
         ...book,
-        addedAt: new Date()
+        addedAt: new Date(),
+        ownerId: user._id // Ensure ownerId is set
       };
       
-      setBooks((prev) => [...prev, newBook]);
-      setFilteredBooks((prev) => [...prev, newBook]);
+      const addedBook = await bookApi.addBook(newBook);
+      
+      // Don't add to the books list - it's for other users' books
+      // Instead, show a success toast
+      toast.success(`Successfully added "${addedBook.title}"`);
       
       const newTransaction: TransactionType = {
         id: crypto.randomUUID(),
@@ -174,7 +199,7 @@ const Index = () => {
         amount: book.creditValue,
         description: `Added '${book.title}'`,
         date: new Date(),
-        bookId: book.id,
+        bookId: addedBook.id,
         userId: user._id,
       };
       

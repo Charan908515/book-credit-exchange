@@ -14,4 +14,5 @@ export interface BookType {
   readCount?: number;
   description?: string;
   publishedDate?: string;
+  ownerId?: string;
 }
