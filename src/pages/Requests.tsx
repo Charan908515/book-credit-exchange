@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
-import { BookType } from "@/types/book";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, X } from "lucide-react";
@@ -17,46 +16,49 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
+import { requestApi } from "@/services/api";
 
-// Sample data for requested and pending books
-const initialRequestedBooks: BookType[] = [
-  {
-    id: "r1",
-    title: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    genres: ["Fiction", "Classic"],
-    condition: "Good",
-    creditValue: 2,
-    coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
-    status: "Pending Approval"
-  },
-  {
-    id: "r2",
-    title: "Pride and Prejudice",
-    author: "Jane Austen",
-    genres: ["Romance", "Classic"],
-    condition: "Very Good",
-    creditValue: 3,
-    coverUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=692&auto=format&fit=crop",
-    status: "Approved"
-  }
-];
+// Define Request type
+interface RequestType {
+  _id: string;
+  bookId: {
+    _id: string;
+    title: string;
+    author: string;
+    genres: string[];
+    condition: string;
+    creditValue: number;
+    coverUrl: string;
+    description: string;
+  };
+  requesterId: {
+    _id: string;
+    username: string;
+    email: string;
+  };
+  ownerId: {
+    _id: string;
+    username: string;
+    email: string;
+  };
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  meetupDetails: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
-const initialIncomingRequests: BookType[] = [
-  {
-    id: "i1",
-    title: "The Lord of the Rings",
-    author: "J.R.R. Tolkien",
-    genres: ["Fantasy", "Adventure"],
-    condition: "Very Good",
-    creditValue: 3,
-    coverUrl: "https://images.unsplash.com/photo-1513001900722-370f803f498d?q=80&w=687&auto=format&fit=crop",
-    requestedBy: "Jane Smith",
-    requestedByEmail: "jane.smith@example.com"
-  }
-];
-
-const RequestCard = ({ book, actions }: { book: BookType, actions?: React.ReactNode }) => {
+const RequestCard = ({ 
+  request, 
+  actions, 
+  isOutgoing = false 
+}: { 
+  request: RequestType, 
+  actions?: React.ReactNode, 
+  isOutgoing?: boolean 
+}) => {
+  const book = request.bookId;
+  const requestUser = isOutgoing ? request.ownerId : request.requesterId;
+  
   return (
     <div className="flex flex-col md:flex-row gap-4 border rounded-lg p-4 bg-card">
       <div className="w-full md:w-24 h-32 flex-shrink-0">
@@ -84,15 +86,18 @@ const RequestCard = ({ book, actions }: { book: BookType, actions?: React.ReactN
             <span className="text-sm">Condition: <span className="font-medium">{book.condition}</span></span>
             <span className="ml-4 text-sm">Credits: <span className="font-medium">{book.creditValue}</span></span>
           </div>
-          {book.status && (
-            <span className={`text-sm font-medium ${
-              book.status === "Approved" ? "text-green-600" : "text-amber-600"
-            }`}>
-              {book.status}
-            </span>
-          )}
-          {book.requestedBy && (
-            <span className="text-sm">Requested by: <span className="font-medium">{book.requestedBy}</span></span>
+          <span className={`text-sm font-medium ${
+            request.status === "approved" ? "text-green-600" : 
+            request.status === "rejected" ? "text-red-600" : "text-amber-600"
+          }`}>
+            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+          </span>
+        </div>
+        <div className="mt-1">
+          {isOutgoing ? (
+            <span className="text-sm">Owned by: <span className="font-medium">{requestUser.username}</span></span>
+          ) : (
+            <span className="text-sm">Requested by: <span className="font-medium">{requestUser.username}</span></span>
           )}
         </div>
         {actions && (
@@ -106,11 +111,12 @@ const RequestCard = ({ book, actions }: { book: BookType, actions?: React.ReactN
 };
 
 const Requests = () => {
-  const [requestedBooks, setRequestedBooks] = useState<BookType[]>(initialRequestedBooks);
-  const [incomingRequests, setIncomingRequests] = useState<BookType[]>(initialIncomingRequests);
-  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [incomingRequests, setIncomingRequests] = useState<RequestType[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<RequestType[]>([]);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [meetupDetails, setMeetupDetails] = useState("");
   const [showMeetupDialog, setShowMeetupDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -119,7 +125,29 @@ const Requests = () => {
     if (!user) {
       toast.error("Please sign in to access your requests");
       navigate("/login");
+      return;
     }
+
+    const fetchRequests = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch both incoming and outgoing requests in parallel
+        const [incoming, outgoing] = await Promise.all([
+          requestApi.getIncomingRequests(user._id),
+          requestApi.getOutgoingRequests(user._id)
+        ]);
+        
+        setIncomingRequests(incoming || []);
+        setOutgoingRequests(outgoing || []);
+      } catch (error) {
+        console.error("Error fetching requests:", error);
+        toast.error("Failed to fetch requests. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRequests();
   }, [user, navigate]);
 
   // If not authenticated, don't render the content
@@ -127,48 +155,61 @@ const Requests = () => {
     return null;
   }
 
-  const handleCancelRequest = (bookId: string) => {
-    setRequestedBooks((prev) => prev.filter((book) => book.id !== bookId));
+  const handleCancelRequest = async (requestId: string) => {
+    try {
+      await requestApi.cancelRequest(requestId);
+      setOutgoingRequests(prev => prev.filter(req => req._id !== requestId));
+      toast.success("Request cancelled successfully");
+    } catch (error) {
+      console.error("Error cancelling request:", error);
+      toast.error("Failed to cancel request. Please try again.");
+    }
   };
 
-  const handleOpenApprovalDialog = (bookId: string) => {
-    setSelectedBookId(bookId);
+  const handleOpenApprovalDialog = (requestId: string) => {
+    setSelectedRequestId(requestId);
     setMeetupDetails("");
     setShowMeetupDialog(true);
-    console.log("Opening dialog for book ID:", bookId);
   };
 
-  const handleSendMeetupDetails = () => {
-    if (!selectedBookId || !meetupDetails.trim()) {
+  const handleSendMeetupDetails = async () => {
+    if (!selectedRequestId || !meetupDetails.trim()) {
       toast.error("Please enter the meetup details");
       return;
     }
 
-    const selectedBook = incomingRequests.find(book => book.id === selectedBookId);
-    
-    if (!selectedBook) {
-      toast.error("Book request not found");
-      return;
+    try {
+      const updatedRequest = await requestApi.updateRequest(selectedRequestId, {
+        status: 'approved',
+        meetupDetails: meetupDetails
+      });
+      
+      // Update the request in the list
+      setIncomingRequests(prev => prev.map(req => 
+        req._id === selectedRequestId ? updatedRequest : req
+      ));
+      
+      toast.success(`Request approved and meetup details sent to ${updatedRequest.requesterId.username}`);
+      
+      // Close the dialog
+      setShowMeetupDialog(false);
+      setSelectedRequestId(null);
+    } catch (error) {
+      console.error("Error approving request:", error);
+      toast.error("Failed to approve request. Please try again.");
     }
-
-    // In a real application, this would call an API to send the email
-    // For demo purposes, we'll just show a toast
-    toast.success(`Email sent to ${selectedBook.requestedBy} with meetup details`);
-    console.log("Sending email to:", selectedBook.requestedByEmail);
-    console.log("Meetup details:", meetupDetails);
-    console.log("Book:", selectedBook.title);
-
-    // Remove the book from incoming requests list
-    setIncomingRequests((prev) => prev.filter((book) => book.id !== selectedBookId));
-    
-    // Close the dialog
-    setShowMeetupDialog(false);
-    setSelectedBookId(null);
   };
 
-  const handleRejectRequest = (bookId: string) => {
-    setIncomingRequests((prev) => prev.filter((book) => book.id !== bookId));
-    toast.success("Request rejected successfully");
+  const handleRejectRequest = async (requestId: string) => {
+    try {
+      await requestApi.updateRequest(requestId, { status: 'rejected' });
+      // Remove the request from the incoming list
+      setIncomingRequests(prev => prev.filter(req => req._id !== requestId));
+      toast.success("Request rejected successfully");
+    } catch (error) {
+      console.error("Error rejecting request:", error);
+      toast.error("Failed to reject request. Please try again.");
+    }
   };
 
   return (
@@ -190,18 +231,23 @@ const Requests = () => {
           </TabsList>
           
           <TabsContent value="outgoing">
-            {requestedBooks.length > 0 ? (
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <p className="text-muted-foreground">Loading your requests...</p>
+              </div>
+            ) : outgoingRequests.length > 0 ? (
               <div className="space-y-4">
-                {requestedBooks.map((book) => (
+                {outgoingRequests.map((request) => (
                   <RequestCard 
-                    key={book.id}
-                    book={book}
+                    key={request._id}
+                    request={request}
+                    isOutgoing={true}
                     actions={
-                      book.status === "Pending Approval" ? (
+                      request.status === "pending" ? (
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleCancelRequest(book.id)}
+                          onClick={() => handleCancelRequest(request._id)}
                         >
                           Cancel Request
                         </Button>
@@ -221,33 +267,39 @@ const Requests = () => {
           </TabsContent>
           
           <TabsContent value="incoming">
-            {incomingRequests.length > 0 ? (
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <p className="text-muted-foreground">Loading your requests...</p>
+              </div>
+            ) : incomingRequests.length > 0 ? (
               <div className="space-y-4">
-                {incomingRequests.map((book) => (
+                {incomingRequests.map((request) => (
                   <RequestCard 
-                    key={book.id}
-                    book={book}
+                    key={request._id}
+                    request={request}
                     actions={
-                      <>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleRejectRequest(book.id)}
-                        >
-                          <X className="mr-1 h-4 w-4" />
-                          Reject
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="text-green-600 hover:text-green-600"
-                          onClick={() => handleOpenApprovalDialog(book.id)}
-                        >
-                          <Check className="mr-1 h-4 w-4" />
-                          Approve
-                        </Button>
-                      </>
+                      request.status === "pending" ? (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleRejectRequest(request._id)}
+                          >
+                            <X className="mr-1 h-4 w-4" />
+                            Reject
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-green-600 hover:text-green-600"
+                            onClick={() => handleOpenApprovalDialog(request._id)}
+                          >
+                            <Check className="mr-1 h-4 w-4" />
+                            Approve
+                          </Button>
+                        </>
+                      ) : null
                     }
                   />
                 ))}

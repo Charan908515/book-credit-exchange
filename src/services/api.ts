@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { BookType } from '@/types/book';
 
@@ -200,5 +199,58 @@ export const transactionApi = {
   exchangeBook: async (requesterId: string, bookId: string) => {
     const response = await api.post('/transactions/exchange', { requesterId, bookId });
     return response.data;
+  }
+};
+
+// Request API calls
+export const requestApi = {
+  getIncomingRequests: async (userId: string) => {
+    try {
+      const response = await api.get(`/requests/incoming/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching incoming requests:', error);
+      throw error;
+    }
+  },
+  
+  getOutgoingRequests: async (userId: string) => {
+    try {
+      const response = await api.get(`/requests/outgoing/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching outgoing requests:', error);
+      throw error;
+    }
+  },
+  
+  createRequest: async (bookId: string, requesterId: string) => {
+    try {
+      const response = await api.post('/requests', { bookId, requesterId });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating request:', error);
+      throw error;
+    }
+  },
+  
+  updateRequest: async (requestId: string, updates: { status?: string, meetupDetails?: string }) => {
+    try {
+      const response = await api.patch(`/requests/${requestId}`, updates);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating request:', error);
+      throw error;
+    }
+  },
+  
+  cancelRequest: async (requestId: string) => {
+    try {
+      const response = await api.delete(`/requests/${requestId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error cancelling request:', error);
+      throw error;
+    }
   }
 };
