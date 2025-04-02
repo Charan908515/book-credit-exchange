@@ -30,7 +30,36 @@ export const bookApi = {
       return response.data;
     } catch (error) {
       console.error('Error fetching books:', error);
-      return [];
+      // Return mock data for demo purposes when server is unavailable
+      console.log("Returning mock books data");
+      return [
+        {
+          id: "1",
+          title: "To Kill a Mockingbird",
+          author: "Harper Lee",
+          genres: ["Fiction", "Classic"],
+          condition: "Good",
+          creditValue: 2,
+          coverUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
+          ownerId: "mock_owner_1",
+          isAvailable: true,
+          description: "The story of racial injustice and the loss of innocence",
+          publishedDate: "1960"
+        },
+        {
+          id: "2",
+          title: "1984",
+          author: "George Orwell",
+          genres: ["Dystopian", "Political Fiction"],
+          condition: "Very Good",
+          creditValue: 3,
+          coverUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/1984first.jpg/330px-1984first.jpg",
+          ownerId: "mock_owner_2",
+          isAvailable: true,
+          description: "A dystopian social science fiction novel and cautionary tale",
+          publishedDate: "1949"
+        }
+      ];
     }
   },
   

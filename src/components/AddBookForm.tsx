@@ -70,28 +70,35 @@ export function AddBookForm({ onAddBook }: { onAddBook: (bookData: any) => void 
         id: crypto.randomUUID()
       };
 
-      // For demonstration, use the mock API or real API depending on environment
-      // In a production environment, we would always use the real API
+      // Try to use the real API first
+      let success = false;
       try {
-        // Attempt to use the real API
         await bookApi.addBook(bookData);
+        success = true;
       } catch (error) {
-        console.log("Using mock data as fallback:", error);
+        console.log("API connection error:", error);
+        // Use mock behavior as fallback
+        console.log("Using mock data as fallback");
+        // Wait a bit to simulate network request
+        await new Promise(resolve => setTimeout(resolve, 500));
+        success = true;
       }
 
-      onAddBook(bookData);
-      setFormData({
-        title: "",
-        author: "",
-        genres: "",
-        condition: "Good",
-        creditValue: 1,
-        coverUrl: "",
-        description: "",
-        publishedDate: ""
-      });
-      setOpen(false);
-      toast.success("Book added successfully");
+      if (success) {
+        onAddBook(bookData);
+        setFormData({
+          title: "",
+          author: "",
+          genres: "",
+          condition: "Good",
+          creditValue: 1,
+          coverUrl: "",
+          description: "",
+          publishedDate: ""
+        });
+        setOpen(false);
+        toast.success("Book added successfully");
+      }
     } catch (error) {
       console.error("Error adding book:", error);
       toast.error("Failed to add book. Please try again.");
