@@ -47,7 +47,10 @@ router.post('/', async (req, res) => {
     creditValue: req.body.creditValue,
     coverUrl: req.body.coverUrl,
     ownerId: req.body.ownerId,
-    readCount: 0
+    description: req.body.description || '',
+    publishedDate: req.body.publishedDate || '',
+    readCount: 0,
+    isAvailable: true
   });
 
   try {
@@ -74,6 +77,8 @@ router.patch('/:id', async (req, res) => {
     if (req.body.coverUrl) book.coverUrl = req.body.coverUrl;
     if (req.body.isAvailable !== undefined) book.isAvailable = req.body.isAvailable;
     if (req.body.readCount !== undefined) book.readCount = req.body.readCount;
+    if (req.body.description) book.description = req.body.description;
+    if (req.body.publishedDate) book.publishedDate = req.body.publishedDate;
     
     const updatedBook = await book.save();
     res.json(updatedBook);
@@ -101,12 +106,10 @@ router.post('/:id/read', async (req, res) => {
 // Delete a book
 router.delete('/:id', async (req, res) => {
   try {
-    const book = await Book.findById(req.params.id);
-    if (!book) {
+    const result = await Book.findByIdAndDelete(req.params.id);
+    if (!result) {
       return res.status(404).json({ message: 'Book not found' });
     }
-    
-    await book.remove();
     res.json({ message: 'Book deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });

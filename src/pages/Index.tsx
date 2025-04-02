@@ -16,107 +16,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { bookApi, transactionApi } from "@/services/api";
 
-const initialBooks: BookType[] = [
-  {
-    id: "1",
-    title: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    genres: ["Fiction", "Classic", "Coming-of-age"],
-    condition: "Good",
-    creditValue: 2,
-    coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2023, 9, 15), // Oct 15, 2023
-    readCount: 42
-  },
-  {
-    id: "2",
-    title: "1984",
-    author: "George Orwell",
-    genres: ["Fiction", "Dystopian", "Classics"],
-    condition: "Very Good",
-    creditValue: 3,
-    coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2023, 10, 5), // Nov 5, 2023
-    readCount: 29
-  },
-  {
-    id: "3",
-    title: "Pride and Prejudice",
-    author: "Jane Austen",
-    genres: ["Romance", "Classic", "Fiction"],
-    condition: "Like New",
-    creditValue: 4,
-    coverUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=692&auto=format&fit=crop",
-    addedAt: new Date(2023, 11, 12), // Dec 12, 2023
-    readCount: 15
-  },
-  {
-    id: "4",
-    title: "The Great Gatsby",
-    author: "F. Scott Fitzgerald",
-    genres: ["Fiction", "Classic"],
-    condition: "Good",
-    creditValue: 2,
-    coverUrl: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2024, 0, 8), // Jan 8, 2024
-    readCount: 21
-  },
-  {
-    id: "5",
-    title: "The Hobbit",
-    author: "J.R.R. Tolkien",
-    genres: ["Fantasy", "Adventure"],
-    condition: "Fair",
-    creditValue: 2,
-    coverUrl: "https://images.unsplash.com/photo-1629992101753-56d196c8aabb?q=80&w=690&auto=format&fit=crop",
-    addedAt: new Date(2024, 1, 20), // Feb 20, 2024
-    readCount: 33
-  },
-  {
-    id: "6",
-    title: "Harry Potter and the Sorcerer's Stone",
-    author: "J.K. Rowling",
-    genres: ["Fantasy", "Young Adult"],
-    condition: "Good",
-    creditValue: 3,
-    coverUrl: "https://images.unsplash.com/photo-1626618012641-bfbca5a31239?q=80&w=764&auto=format&fit=crop",
-    addedAt: new Date(2024, 2, 5), // Mar 5, 2024
-    readCount: 56
-  }
-];
-
-const initialTransactions: TransactionType[] = [
-  {
-    id: "t1",
-    type: "credit",
-    amount: 3,
-    description: "Added 'The Lord of the Rings'",
-    date: new Date(2023, 5, 15),
-    userId: "user1",
-  },
-  {
-    id: "t2",
-    type: "debit",
-    amount: 2,
-    description: "Received 'Dune'",
-    date: new Date(2023, 6, 20),
-    userId: "user1",
-  },
-  {
-    id: "t3",
-    type: "credit",
-    amount: 4,
-    description: "Added 'The Alchemist'",
-    date: new Date(2023, 7, 5),
-    userId: "user1",
-  },
-];
-
 const Index = () => {
   const [books, setBooks] = useState<BookType[]>([]);
   const [filteredBooks, setFilteredBooks] = useState<BookType[]>([]);
-  const [creditBalance, setCreditBalance] = useState(10);
-  const [transactions, setTransactions] = useState<TransactionType[]>(initialTransactions);
+  const [creditBalance, setCreditBalance] = useState(0);
+  const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -138,28 +42,15 @@ const Index = () => {
           setBooks(availableBooks);
           setFilteredBooks(availableBooks);
         } else {
-          console.log("No available books found, using initial books as fallback");
-          
-          // If using fallback data, filter it too
-          const fallbackBooks = user
-            ? initialBooks.filter(book => !book.ownerId || book.ownerId !== user._id)
-            : initialBooks;
-            
-          setBooks(fallbackBooks);
-          setFilteredBooks(fallbackBooks);
+          console.log("No available books found");
+          setBooks([]);
+          setFilteredBooks([]);
         }
       } catch (error) {
         console.error("Error fetching books:", error);
-        
-        // Use fallback data if API fails, filtered by current user
-        const fallbackBooks = user
-          ? initialBooks.filter(book => !book.ownerId || book.ownerId !== user._id)
-          : initialBooks;
-          
-        setBooks(fallbackBooks);
-        setFilteredBooks(fallbackBooks);
-        
-        toast.error("Failed to fetch books. Using sample data.");
+        toast.error("Failed to fetch books. Please try again later.");
+        setBooks([]);
+        setFilteredBooks([]);
       } finally {
         setIsLoading(false);
       }
@@ -168,8 +59,8 @@ const Index = () => {
     fetchBooks();
     
     if (user) {
-      // This would be implemented with a real API call to get user balance
-      // For now we use the mock value
+      // Update user's credit balance
+      setCreditBalance(user.credits || 0);
     }
   }, [user]);
 
@@ -326,7 +217,11 @@ const Index = () => {
               <ViewToggle view={viewMode} onChange={setViewMode} />
             </div>
             
-            {filteredBooks.length > 0 ? (
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <p>Loading books...</p>
+              </div>
+            ) : filteredBooks.length > 0 ? (
               viewMode === "grid" ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredBooks.map((book) => (

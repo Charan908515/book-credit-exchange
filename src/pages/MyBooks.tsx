@@ -7,45 +7,10 @@ import { BookCard } from "@/components/BookCard";
 import { BookListItem } from "@/components/BookListItem";
 import { Button } from "@/components/ui/button";
 import { ViewToggle } from "@/components/ViewToggle";
-import { Plus } from "lucide-react";
 import { AddBookForm } from "@/components/AddBookForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { bookApi } from "@/services/api";
-
-// Sample data for my books only used as fallback
-const initialMyBooks: BookType[] = [
-  {
-    id: "m1",
-    title: "The Lord of the Rings",
-    author: "J.R.R. Tolkien",
-    genres: ["Fantasy", "Adventure"],
-    condition: "Very Good",
-    creditValue: 3,
-    coverUrl: "https://images.unsplash.com/photo-1513001900722-370f803f498d?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2023, 8, 10), // Sep 10, 2023
-  },
-  {
-    id: "m2",
-    title: "Dune",
-    author: "Frank Herbert",
-    genres: ["Science Fiction"],
-    condition: "Good",
-    creditValue: 2,
-    coverUrl: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2023, 7, 22), // Aug 22, 2023
-  },
-  {
-    id: "m3",
-    title: "The Alchemist",
-    author: "Paulo Coelho",
-    genres: ["Fiction", "Philosophy"],
-    condition: "Like New",
-    creditValue: 4,
-    coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2024, 1, 15), // Feb 15, 2024
-  },
-];
 
 const MyBooks = () => {
   const [myBooks, setMyBooks] = useState<BookType[]>([]);
@@ -73,26 +38,13 @@ const MyBooks = () => {
           console.log("User's books:", userBooks);
           setMyBooks(userBooks);
         } else {
-          // Fallback to initial books for demo purposes, but ensure ownerId matches
-          console.log("No user books found, using initial books as fallback");
-          const myInitialBooks = initialMyBooks.map(book => ({
-            ...book,
-            ownerId: user._id,
-            isAvailable: true
-          }));
-          setMyBooks(myInitialBooks);
+          console.log("No user books found");
+          setMyBooks([]);
         }
       } catch (error) {
         console.error("Error fetching user books:", error);
-        toast.error("Failed to fetch your books. Using sample data instead.");
-        
-        // Fallback to initial books for demo purposes, but ensure ownerId matches
-        const myInitialBooks = initialMyBooks.map(book => ({
-          ...book,
-          ownerId: user._id,
-          isAvailable: true
-        }));
-        setMyBooks(myInitialBooks);
+        toast.error("Failed to fetch your books. Please try again later.");
+        setMyBooks([]);
       } finally {
         setIsLoading(false);
       }
@@ -128,16 +80,13 @@ const MyBooks = () => {
 
   const handleRemoveBook = async (bookId: string) => {
     try {
-      // Try to use the real API
       await bookApi.deleteBook(bookId);
       
       setMyBooks((prev) => prev.filter((book) => book.id !== bookId));
       toast.success("Book removed successfully");
     } catch (error) {
       console.error("Error removing book:", error);
-      // Still update UI if API fails (for demo purposes)
-      setMyBooks((prev) => prev.filter((book) => book.id !== bookId));
-      toast.success("Book removed successfully (demo mode)");
+      toast.error("Failed to remove book. Please try again.");
     }
   };
 

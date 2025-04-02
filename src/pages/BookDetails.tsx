@@ -10,94 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
-
-// For demo purposes - in a real app, this would be fetched from API
-const getBookById = (id: string): BookType | undefined => {
-  const allBooks = [
-    ...initialBooks,
-    ...initialMyBooks,
-    ...initialRequestedBooks,
-    ...initialIncomingRequests
-  ];
-  
-  return allBooks.find(book => book.id === id);
-};
-
-// Sample data for books (imported from other components for demo)
-const initialBooks: BookType[] = [
-  {
-    id: "1",
-    title: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    genres: ["Fiction", "Classic", "Coming-of-age"],
-    condition: "Good",
-    creditValue: 2,
-    coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2023, 9, 15),
-    readCount: 42,
-    publishedDate: "July 11, 1960",
-    description: "To Kill a Mockingbird is a novel by Harper Lee published in 1960. It was immediately successful, winning the Pulitzer Prize, and has become a classic of modern American literature. The plot and characters are loosely based on Lee's observations of her family, her neighbors and an event that occurred near her hometown of Monroeville, Alabama, in 1936, when she was ten."
-  },
-  {
-    id: "2",
-    title: "1984",
-    author: "George Orwell",
-    genres: ["Fiction", "Dystopian", "Classics"],
-    condition: "Very Good",
-    creditValue: 3,
-    coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2023, 10, 5),
-    readCount: 29,
-    publishedDate: "June 8, 1949",
-    description: "1984 is a dystopian novel by English novelist George Orwell. It was published on 8 June 1949 as Orwell's ninth and final book completed in his lifetime. The story was mostly written at Barnhill, a farmhouse on the Scottish island of Jura, at a time when Orwell was suffering from tuberculosis."
-  }
-];
-
-const initialMyBooks: BookType[] = [
-  {
-    id: "m1",
-    title: "The Lord of the Rings",
-    author: "J.R.R. Tolkien",
-    genres: ["Fantasy", "Adventure"],
-    condition: "Very Good",
-    creditValue: 3,
-    coverUrl: "https://images.unsplash.com/photo-1513001900722-370f803f498d?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2023, 8, 10),
-    publishedDate: "July 29, 1954",
-    description: "The Lord of the Rings is an epic high-fantasy novel by English author and scholar J. R. R. Tolkien. Set in Middle-earth, intended to be Earth at some distant time in the past, the story began as a sequel to Tolkien's 1937 children's book The Hobbit, but eventually developed into a much larger work."
-  }
-];
-
-const initialRequestedBooks: BookType[] = [
-  {
-    id: "r1",
-    title: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    genres: ["Fiction", "Classic"],
-    condition: "Good",
-    creditValue: 2,
-    coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
-    status: "Pending Approval",
-    publishedDate: "July 11, 1960",
-    description: "To Kill a Mockingbird is a novel by Harper Lee published in 1960. It was immediately successful, winning the Pulitzer Prize, and has become a classic of modern American literature."
-  }
-];
-
-const initialIncomingRequests: BookType[] = [
-  {
-    id: "i1",
-    title: "The Lord of the Rings",
-    author: "J.R.R. Tolkien",
-    genres: ["Fantasy", "Adventure"],
-    condition: "Very Good",
-    creditValue: 3,
-    coverUrl: "https://images.unsplash.com/photo-1513001900722-370f803f498d?q=80&w=687&auto=format&fit=crop",
-    requestedBy: "Jane Smith",
-    requestedByEmail: "jane.smith@example.com",
-    publishedDate: "July 29, 1954",
-    description: "The Lord of the Rings is an epic high-fantasy novel by English author and scholar J. R. R. Tolkien. Set in Middle-earth, intended to be Earth at some distant time in the past."
-  }
-];
+import { bookApi } from "@/services/api";
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -108,19 +21,31 @@ const BookDetails = () => {
 
   useEffect(() => {
     if (id) {
-      // In a real app, this would be an API call
-      const fetchedBook = getBookById(id);
-      setBook(fetchedBook);
-      setLoading(false);
+      const fetchBook = async () => {
+        try {
+          setLoading(true);
+          const fetchedBook = await bookApi.getBook(id);
+          
+          if (fetchedBook) {
+            setBook(fetchedBook);
+          } else {
+            toast.error("Book not found");
+            navigate("/");
+          }
+        } catch (error) {
+          console.error("Error fetching book details:", error);
+          toast.error("Failed to load book details");
+          navigate("/");
+        } finally {
+          setLoading(false);
+        }
+      };
       
-      if (!fetchedBook) {
-        toast.error("Book not found");
-        navigate("/");
-      }
+      fetchBook();
     }
   }, [id, navigate]);
 
-  const handleRequestBook = () => {
+  const handleRequestBook = async () => {
     if (!user) {
       toast.error("Please sign in to request books");
       navigate("/login");
@@ -129,8 +54,19 @@ const BookDetails = () => {
     
     if (!book) return;
     
-    toast.success(`Successfully requested "${book.title}"`);
-    navigate("/requests");
+    if (user.credits < book.creditValue) {
+      toast.error("Not enough credits to request this book");
+      return;
+    }
+    
+    try {
+      await bookApi.updateBook(book.id, { isAvailable: false });
+      toast.success(`Successfully requested "${book.title}"`);
+      navigate("/requests");
+    } catch (error) {
+      console.error("Error requesting book:", error);
+      toast.error("Failed to request book. Please try again.");
+    }
   };
 
   if (loading) {
@@ -240,7 +176,7 @@ const BookDetails = () => {
                   {book.addedAt && (
                     <div>
                       <p className="text-sm text-muted-foreground">Added</p>
-                      <p className="font-medium">{formatDistanceToNow(book.addedAt, { addSuffix: true })}</p>
+                      <p className="font-medium">{formatDistanceToNow(new Date(book.addedAt), { addSuffix: true })}</p>
                     </div>
                   )}
                 </div>
@@ -254,7 +190,7 @@ const BookDetails = () => {
               </div>
             )}
             
-            {!book.status && !book.requestedBy && (
+            {book.isAvailable !== false && user && book.ownerId !== user._id && (
               <Button 
                 onClick={handleRequestBook}
                 className="w-full md:w-auto"
@@ -263,9 +199,9 @@ const BookDetails = () => {
               </Button>
             )}
             
-            {book.status && (
+            {!book.isAvailable && (
               <div className="mt-4 p-3 bg-muted rounded-md">
-                <p className="font-medium">Status: <span className={book.status === "Approved" ? "text-green-600" : "text-amber-600"}>{book.status}</span></p>
+                <p className="font-medium">Status: <span className="text-amber-600">Not Available</span></p>
               </div>
             )}
           </div>

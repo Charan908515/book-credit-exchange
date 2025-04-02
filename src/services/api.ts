@@ -1,51 +1,9 @@
+
 import axios from 'axios';
 import { BookType } from '@/types/book';
 
 // This would be an environment variable in production
 const API_URL = 'http://localhost:5000/api';
-
-// Sample data for books in case the API fails
-const sampleBooks: BookType[] = [
-  {
-    id: "1",
-    title: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    genres: ["Fiction", "Classic", "Coming-of-age"],
-    condition: "Good",
-    creditValue: 2,
-    coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2023, 9, 15), // Oct 15, 2023
-    readCount: 42,
-    ownerId: "demo_user_123", // Added ownerId
-    isAvailable: true
-  },
-  {
-    id: "2",
-    title: "1984",
-    author: "George Orwell",
-    genres: ["Fiction", "Dystopian", "Classics"],
-    condition: "Very Good",
-    creditValue: 3,
-    coverUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=687&auto=format&fit=crop",
-    addedAt: new Date(2023, 10, 5), // Nov 5, 2023
-    readCount: 29,
-    ownerId: "demo_admin_123", // Different user
-    isAvailable: true
-  },
-  {
-    id: "3",
-    title: "Pride and Prejudice",
-    author: "Jane Austen",
-    genres: ["Romance", "Classic", "Fiction"],
-    condition: "Like New",
-    creditValue: 4,
-    coverUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=692&auto=format&fit=crop",
-    addedAt: new Date(2023, 11, 12), // Dec 12, 2023
-    readCount: 15,
-    ownerId: "demo_user_123",
-    isAvailable: true
-  }
-];
 
 // Configure axios
 const api = axios.create({
@@ -70,18 +28,10 @@ export const bookApi = {
     try {
       const response = await api.get('/books');
       console.log("API books response:", response.data);
-      
-      // Ensure all books have the isAvailable property
-      const booksWithAvailability = response.data.map((book: BookType) => ({
-        ...book,
-        isAvailable: book.isAvailable !== undefined ? book.isAvailable : true
-      }));
-      
-      return booksWithAvailability;
+      return response.data;
     } catch (error) {
       console.error('Error fetching books:', error);
-      // Return sample books if API call fails
-      return sampleBooks;
+      return [];
     }
   },
   
@@ -92,8 +42,7 @@ export const bookApi = {
       return response.data;
     } catch (error) {
       console.error('Error fetching user books:', error);
-      // Filter sample books by ownerId
-      return sampleBooks.filter(book => book.ownerId === userId);
+      return [];
     }
   },
   
@@ -103,8 +52,7 @@ export const bookApi = {
       return response.data;
     } catch (error) {
       console.error('Error fetching book details:', error);
-      // Return a sample book if API call fails
-      return sampleBooks.find(book => book.id === id);
+      return null;
     }
   },
   
@@ -121,26 +69,10 @@ export const bookApi = {
       
       const response = await api.post('/books', bookToAdd);
       console.log("Book added successfully:", response.data);
-      
-      // Add book to our local sample data for fallback
-      sampleBooks.push(response.data);
-      
       return response.data;
     } catch (error) {
       console.error('Error adding book:', error);
-      // Create a new book with a random ID for fallback
-      const newBook = {
-        ...bookData,
-        id: bookData.id || 'local_' + Date.now(),
-        addedAt: bookData.addedAt || new Date(),
-        isAvailable: true
-      };
-      
-      // Add to our local sample collection
-      sampleBooks.push(newBook);
-      console.log("Added fallback book to sample data:", newBook);
-      
-      return newBook;
+      throw error;
     }
   },
   
@@ -178,7 +110,7 @@ export const userApi = {
       return response.data;
     } catch (error) {
       console.log('OTP Request Error:', error);
-      // For development/demo purposes, simulate successful OTP sending
+      // For development/demo purposes only
       console.log(`OTP for ${email} is: 123456`);
       return { message: 'OTP sent successfully (development mode)' };
     }
@@ -195,7 +127,7 @@ export const userApi = {
       return response.data;
     } catch (error) {
       console.log('OTP Verification Error:', error);
-      // For development/demo purposes, simulate successful registration if OTP is 123456
+      // For development/demo purposes only
       if (data.otp === '123456') {
         console.log('Registered user:', data);
         return { 
@@ -219,7 +151,7 @@ export const userApi = {
       return response.data;
     } catch (error) {
       console.log('Login Error:', error);
-      // For development/demo purposes, simulate successful login with test credentials
+      // For development/demo purposes only
       if (credentials.email === 'test@example.com' && credentials.password === 'password123') {
         return {
           _id: 'demo_user_123',
