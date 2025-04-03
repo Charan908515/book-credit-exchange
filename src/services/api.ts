@@ -30,36 +30,8 @@ export const bookApi = {
       return response.data;
     } catch (error) {
       console.error('Error fetching books:', error);
-      // Return mock data for demo purposes when server is unavailable
-      console.log("Returning mock books data");
-      return [
-        {
-          id: "1",
-          title: "To Kill a Mockingbird",
-          author: "Harper Lee",
-          genres: ["Fiction", "Classic"],
-          condition: "Good",
-          creditValue: 2,
-          coverUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
-          ownerId: "mock_owner_1",
-          isAvailable: true,
-          description: "The story of racial injustice and the loss of innocence",
-          publishedDate: "1960"
-        },
-        {
-          id: "2",
-          title: "1984",
-          author: "George Orwell",
-          genres: ["Dystopian", "Political Fiction"],
-          condition: "Very Good",
-          creditValue: 3,
-          coverUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/1984first.jpg/330px-1984first.jpg",
-          ownerId: "mock_owner_2",
-          isAvailable: true,
-          description: "A dystopian social science fiction novel and cautionary tale",
-          publishedDate: "1949"
-        }
-      ];
+      console.log("No books available from server");
+      return []; // Return empty array instead of mock data
     }
   },
   
@@ -269,37 +241,9 @@ export const requestApi = {
     } catch (error) {
       console.error('Error fetching incoming requests:', error);
       
-      // Return mock data for development/demo
-      console.log("Using mock data for incoming requests");
-      return [
-        {
-          _id: 'mock_request_1',
-          bookId: {
-            _id: 'book_1',
-            title: "To Kill a Mockingbird",
-            author: "Harper Lee",
-            genres: ["Fiction", "Classic"],
-            condition: "Good",
-            creditValue: 2,
-            coverUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
-            description: "The story of racial injustice and the loss of innocence"
-          },
-          requesterId: {
-            _id: 'user_request_1',
-            username: 'JohnDoe',
-            email: 'john@example.com'
-          },
-          ownerId: {
-            _id: userId,
-            username: 'CurrentUser',
-            email: 'current@example.com'
-          },
-          status: 'pending',
-          meetupDetails: '',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      ];
+      // Return empty array for development/demo
+      console.log("No incoming requests available from server");
+      return [];
     }
   },
   
@@ -310,37 +254,9 @@ export const requestApi = {
     } catch (error) {
       console.error('Error fetching outgoing requests:', error);
       
-      // Return mock data for development/demo
-      console.log("Using mock data for outgoing requests");
-      return [
-        {
-          _id: 'mock_request_2',
-          bookId: {
-            _id: 'book_2',
-            title: "1984",
-            author: "George Orwell",
-            genres: ["Dystopian", "Political Fiction"],
-            condition: "Very Good",
-            creditValue: 3,
-            coverUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/1984first.jpg/330px-1984first.jpg",
-            description: "A dystopian social science fiction novel and cautionary tale"
-          },
-          ownerId: {
-            _id: 'user_owner_1',
-            username: 'JaneSmith',
-            email: 'jane@example.com'
-          },
-          requesterId: {
-            _id: userId,
-            username: 'CurrentUser',
-            email: 'current@example.com'
-          },
-          status: 'pending',
-          meetupDetails: '',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      ];
+      // Return empty array for development/demo
+      console.log("No outgoing requests available from server");
+      return [];
     }
   },
   
@@ -355,53 +271,17 @@ export const requestApi = {
       console.log("Using mock behavior for request creation");
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Find book details from mock data to use in response
-      const mockBooks = [
-        {
-          id: "1",
-          title: "To Kill a Mockingbird",
-          author: "Harper Lee",
-          genres: ["Fiction", "Classic"],
-          condition: "Good",
-          creditValue: 2,
-          coverUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
-          description: "The story of racial injustice and the loss of innocence"
-        },
-        {
-          id: "2",
-          title: "1984",
-          author: "George Orwell",
-          genres: ["Dystopian", "Political Fiction"],
-          condition: "Very Good",
-          creditValue: 3,
-          coverUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/1984first.jpg/330px-1984first.jpg",
-          description: "A dystopian social science fiction novel and cautionary tale"
-        }
-      ];
-      
-      const book = mockBooks.find(b => b.id === bookId) || mockBooks[0];
-      
+      // Create a simple mock request with minimal data
       return {
         _id: 'mock_request_' + Date.now(),
         bookId: {
-          _id: book.id,
-          title: book.title,
-          author: book.author,
-          genres: book.genres,
-          condition: book.condition,
-          creditValue: book.creditValue,
-          coverUrl: book.coverUrl,
-          description: book.description
-        },
-        ownerId: {
-          _id: book.ownerId,
-          username: 'BookOwner',
-          email: 'owner@example.com'
+          _id: bookId,
+          title: "Book Title", // Generic title when offline
+          author: "Book Author", // Generic author when offline
+          creditValue: 2 // Default credit value
         },
         requesterId: {
-          _id: requesterId,
-          username: 'Requester',
-          email: 'requester@example.com'
+          _id: requesterId
         },
         status: 'pending',
         meetupDetails: '',
@@ -422,32 +302,11 @@ export const requestApi = {
       console.log("Using mock behavior for request update");
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Return mock updated request
+      // Return mock updated request with minimal data
       return {
         _id: requestId,
-        bookId: {
-          _id: 'book_1',
-          title: "To Kill a Mockingbird",
-          author: "Harper Lee",
-          genres: ["Fiction", "Classic"],
-          condition: "Good",
-          creditValue: 2,
-          coverUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
-          description: "The story of racial injustice and the loss of innocence"
-        },
-        requesterId: {
-          _id: 'user_request_1',
-          username: 'JohnDoe',
-          email: 'john@example.com'
-        },
-        ownerId: {
-          _id: 'owner_id',
-          username: 'BookOwner',
-          email: 'owner@example.com'
-        },
         status: updates.status || 'pending',
         meetupDetails: updates.meetupDetails || '',
-        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
     }
