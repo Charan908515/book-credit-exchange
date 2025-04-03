@@ -191,7 +191,7 @@ export default function Register() {
                         <InputOTP 
                           maxLength={6} 
                           value={field.value} 
-                          onChange={field.onChange}
+                          onChange={(value) => field.onChange(value)}
                         >
                           <InputOTPGroup>
                             <InputOTPSlot index={0} />
